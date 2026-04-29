@@ -1,0 +1,20 @@
+.App {
+  min-height: 100vh;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+::selection {
+  background-color: #F4C542;
+  color: #0A1F44;
+}
+
+/* Smooth focus for buttons / links */
+button:focus-visible,
+a:focus-visible {
+  outline: 2px solid #F4C542;
+  outline-offset: 2px;
+  border-radius: 6px;
+}
