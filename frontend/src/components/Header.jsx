@@ -27,11 +27,8 @@ const Header = () => {
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-[76px]">
-          <Link to="/" className="flex items-center gap-2 shrink-0">
-            <Logo />
-            <span className="font-montserrat font-extrabold text-[#0A1F44] tracking-tight text-lg sm:text-xl">
-              ENERGEIDE
-            </span>
+          <Link to="/" className="flex items-center shrink-0" aria-label="Energeide - Home">
+            <Logo className="h-12 sm:h-14 w-auto" />
           </Link>
 
           <nav className="hidden lg:flex items-center gap-7">
