@@ -12,6 +12,7 @@ import {
   Users,
   Lightbulb,
   MapPin,
+  Facebook,
 } from "lucide-react";
 import {
   HERO_BADGES,
@@ -21,6 +22,7 @@ import {
   TESTIMONIALS,
   SITE,
 } from "../data/mock";
+import FacebookFeed from "../components/FacebookFeed";
 
 const iconMap = {
   zap: Zap,
@@ -369,6 +371,69 @@ const TestimonialsSection = () => (
   </section>
 );
 
+const FacebookSection = () => (
+  <section className="py-16 sm:py-20 bg-gray-50">
+    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div className="grid lg:grid-cols-2 gap-10 lg:gap-14 items-center">
+        <div>
+          <div className="inline-flex items-center gap-2 bg-[#1877F2]/10 rounded-full px-4 py-1.5 mb-4">
+            <Facebook className="w-4 h-4 text-[#1877F2]" />
+            <span className="text-xs text-[#1877F2] font-montserrat font-semibold tracking-wider">
+              SEGUICI SU FACEBOOK
+            </span>
+          </div>
+          <h2 className="text-3xl sm:text-4xl mb-4 text-[#0A1F44] font-montserrat font-bold leading-[1.1]">
+            Le ultime novità da ENERGEIDE
+          </h2>
+          <p className="text-base text-gray-600 leading-relaxed mb-6 max-w-lg">
+            Foto dei nostri cantieri, consigli pratici per risparmiare in
+            bolletta e aggiornamenti dal mondo del fotovoltaico. Ogni post
+            pubblicato sulla nostra Pagina Facebook compare automaticamente qui.
+          </p>
+          <div className="grid sm:grid-cols-2 gap-3 mb-7">
+            {[
+              "Aggiornamenti in tempo reale",
+              "Foto dei cantieri",
+              "Consigli energetici",
+              "Promozioni esclusive",
+            ].map((t) => (
+              <div
+                key={t}
+                className="flex items-center gap-2 bg-white border border-gray-100 rounded-lg px-3 py-2.5"
+              >
+                <span className="w-2 h-2 rounded-full bg-[#0FB36B]" />
+                <span className="text-sm text-[#0A1F44]">{t}</span>
+              </div>
+            ))}
+          </div>
+          <div className="flex flex-wrap gap-3">
+            <a
+              href={SITE.facebookUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-2 bg-[#1877F2] hover:bg-[#1466d4] text-white rounded-md px-5 h-11 font-montserrat font-semibold text-sm transition-colors"
+            >
+              <Facebook className="w-4 h-4" />
+              Visita la Pagina
+            </a>
+            <Link
+              to="/news"
+              className="inline-flex items-center justify-center gap-2 border border-gray-200 hover:border-[#0A1F44] text-[#0A1F44] rounded-md px-5 h-11 font-montserrat font-semibold text-sm transition-colors"
+            >
+              Vedi tutti i post
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+        </div>
+        <div className="flex justify-center lg:justify-end">
+          <FacebookFeed height={620} />
+        </div>
+      </div>
+    </div>
+  </section>
+);
+
+
 const CTASection = () => (
   <section className="py-16 sm:py-20 bg-[#0A1F44] text-white relative overflow-hidden">
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -412,6 +477,7 @@ const Home = () => (
     <SuggestionSection />
     <WhySection />
     <TestimonialsSection />
+    <FacebookSection />
     <CTASection />
   </>
 );

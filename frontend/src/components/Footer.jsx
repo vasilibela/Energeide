@@ -24,7 +24,9 @@ const Footer = () => {
             </p>
             <div className="flex gap-3 mt-6">
               <a
-                href="#"
+                href={SITE.facebookUrl}
+                target="_blank"
+                rel="noopener noreferrer"
                 aria-label="Facebook"
                 className="w-9 h-9 rounded-full bg-white/5 hover:bg-[#F4C542] hover:text-[#0A1F44] flex items-center justify-center transition-colors"
               >
@@ -49,6 +51,7 @@ const Footer = () => {
                 { label: "Chi Siamo", to: "/chi-siamo" },
                 { label: "Servizi", to: "/servizi" },
                 { label: "Progetti", to: "/progetti" },
+                { label: "News", to: "/news" },
                 { label: "FAQ", to: "/faq" },
                 { label: "Contatti", to: "/contatti" },
               ].map((l) => (

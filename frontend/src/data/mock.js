@@ -9,6 +9,8 @@ export const SITE = {
   email: "info@energeide.it",
   vat: "P.IVA: 02987000649",
   whatsappText: "Ciao! Vorrei ricevere informazioni sulle vostre soluzioni fotovoltaiche.",
+  // Facebook Page URL - usato per il Page Plugin embed
+  facebookUrl: "https://www.facebook.com/profile.php?id=61575384451177",
 };
 
 export const NAV = [
@@ -16,6 +18,7 @@ export const NAV = [
   { label: "Chi Siamo", to: "/chi-siamo" },
   { label: "Servizi", to: "/servizi" },
   { label: "Progetti", to: "/progetti" },
+  { label: "News", to: "/news" },
   { label: "FAQ", to: "/faq" },
   { label: "Contatti", to: "/contatti" },
 ];

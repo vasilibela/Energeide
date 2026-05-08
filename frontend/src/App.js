@@ -15,6 +15,7 @@ import Servizi from "./pages/Servizi";
 import Progetti from "./pages/Progetti";
 import FAQ from "./pages/FAQ";
 import Contatti from "./pages/Contatti";
+import News from "./pages/News";
 
 const ScrollToTop = () => {
   const { pathname } = useLocation();
@@ -36,6 +37,7 @@ const Layout = () => (
         <Route path="/progetti" element={<Progetti />} />
         <Route path="/faq" element={<FAQ />} />
         <Route path="/contatti" element={<Contatti />} />
+        <Route path="/news" element={<News />} />
         <Route path="*" element={<Home />} />
       </Routes>
     </main>
