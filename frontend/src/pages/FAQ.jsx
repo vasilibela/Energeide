@@ -1,30 +1,62 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, Plus, Minus, HelpCircle } from "lucide-react";
-import { FAQS } from "../data/mock";
+import { FAQS, FAQ_CATEGORIES } from "../data/mock";
 import { PageHero } from "./ChiSiamo";
 
 const FAQ = () => {
+  const [activeCategory, setActiveCategory] = useState("Tutti");
   const [open, setOpen] = useState(0);
+
+  const filtered = useMemo(() => {
+    if (activeCategory === "Tutti") return FAQS;
+    return FAQS.filter((f) => f.category === activeCategory);
+  }, [activeCategory]);
+
+  const handleCategoryChange = (cat) => {
+    setActiveCategory(cat);
+    setOpen(0);
+  };
 
   return (
     <>
       <PageHero
         eyebrow="DOMANDE FREQUENTI"
         title="Tutto quello che vuoi sapere"
-        subtitle="Le risposte alle domande più comuni su fotovoltaico, sistemi di accumulo, pompe di calore e finanziamenti."
+        subtitle="Trova le risposte alle domande più comuni sul fotovoltaico, pompe di calore e pratiche burocratiche."
       />
 
       <section className="py-16 sm:py-20 bg-white">
         <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-center mb-10">
+          <div className="flex justify-center mb-8">
             <div className="w-14 h-14 rounded-2xl bg-[#F4C542]/15 flex items-center justify-center">
               <HelpCircle className="w-7 h-7 text-[#F4C542]" />
             </div>
           </div>
 
+          {/* Category filter chips */}
+          <div className="flex flex-wrap items-center justify-center gap-2 mb-10">
+            {FAQ_CATEGORIES.map((cat) => {
+              const isActive = activeCategory === cat;
+              return (
+                <button
+                  key={cat}
+                  type="button"
+                  onClick={() => handleCategoryChange(cat)}
+                  className={`px-4 h-9 rounded-full text-xs sm:text-sm font-montserrat font-semibold transition-colors border ${
+                    isActive
+                      ? "bg-[#0A1F44] text-white border-[#0A1F44]"
+                      : "bg-white text-[#0A1F44] border-gray-200 hover:border-[#0A1F44]"
+                  }`}
+                >
+                  {cat}
+                </button>
+              );
+            })}
+          </div>
+
           <div className="space-y-3">
-            {FAQS.map((f, idx) => {
+            {filtered.map((f, idx) => {
               const isOpen = open === idx;
               return (
                 <div
@@ -40,9 +72,14 @@ const FAQ = () => {
                     onClick={() => setOpen(isOpen ? -1 : idx)}
                     className="w-full flex items-center justify-between gap-4 px-5 py-4 text-left"
                   >
-                    <span className="font-montserrat font-semibold text-[#0A1F44] text-base">
-                      {f.q}
-                    </span>
+                    <div className="flex flex-col gap-1.5 min-w-0">
+                      <span className="text-[10px] sm:text-[11px] tracking-wider uppercase text-[#0FB36B] font-bold">
+                        {f.category}
+                      </span>
+                      <span className="font-montserrat font-semibold text-[#0A1F44] text-base">
+                        {f.q}
+                      </span>
+                    </div>
                     <span
                       className={`shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition-colors ${
                         isOpen
@@ -65,6 +102,11 @@ const FAQ = () => {
                 </div>
               );
             })}
+            {filtered.length === 0 && (
+              <p className="text-center text-gray-500 py-10">
+                Nessuna domanda in questa categoria.
+              </p>
+            )}
           </div>
         </div>
       </section>
@@ -75,8 +117,8 @@ const FAQ = () => {
             Non hai trovato la tua risposta?
           </h2>
           <p className="text-gray-600 mb-6">
-            Scrivici o chiama un nostro consulente: rispondiamo a ogni domanda
-            in modo chiaro e senza impegno.
+            Il nostro team è a tua disposizione. Scrivici su WhatsApp o
+            contattaci direttamente.
           </p>
           <Link
             to="/contatti"

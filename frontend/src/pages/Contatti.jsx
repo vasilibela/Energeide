@@ -110,8 +110,10 @@ const Contatti = () => {
                     <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">
                       Sede
                     </p>
-                    <p className="font-montserrat font-semibold">
-                      Provincia di Avellino, Campania
+                    <p className="font-montserrat font-semibold leading-snug">
+                      {SITE.addressLine1}
+                      <br />
+                      {SITE.addressLine2}
                     </p>
                   </div>
                 </li>
@@ -123,8 +125,10 @@ const Contatti = () => {
                     <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">
                       Orari
                     </p>
-                    <p className="font-montserrat font-semibold">
-                      Lun – Sab · 09:00 – 19:00
+                    <p className="font-montserrat font-semibold leading-snug">
+                      {SITE.hoursWeekdays}
+                      <br />
+                      {SITE.hoursSaturday}
                     </p>
                   </div>
                 </li>
@@ -282,7 +286,8 @@ const Contatti = () => {
             Preferisci una chiamata?
           </h2>
           <p className="text-gray-300 mb-7">
-            I nostri consulenti sono a tua disposizione dal lunedì al sabato.
+            I nostri consulenti sono a tua disposizione dal lunedì al venerdì
+            (9:00-18:00) e il sabato mattina (9:00-13:00).
           </p>
           <a
             href={`tel:${SITE.phoneRaw}`}

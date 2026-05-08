@@ -111,7 +111,7 @@ const HeroSection = () => (
 const StatsSection = () => (
   <section className="py-10 sm:py-12 bg-white border-b border-gray-100">
     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-6 sm:gap-8">
         {STATS.map((s) => {
           const Icon = iconMap[s.icon] || Zap;
           return (

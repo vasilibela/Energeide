@@ -8,6 +8,10 @@ export const SITE = {
   phoneRaw: "393509312938",
   email: "info@energeide.it",
   vat: "P.IVA: 02987000649",
+  addressLine1: "Corso Vittorio Emanuele, 21",
+  addressLine2: "Quadrelle (AV) 83020 \u2013 Italia",
+  hoursWeekdays: "Lun \u2013 Ven: 9:00 \u2013 18:00",
+  hoursSaturday: "Sab: 9:00 \u2013 13:00",
   whatsappText: "Ciao! Vorrei ricevere informazioni sulle vostre soluzioni fotovoltaiche.",
   // Facebook Page URL - usato per il Page Plugin embed
   facebookUrl: "https://www.facebook.com/profile.php?id=61575384451177",
@@ -31,6 +35,7 @@ export const HERO_BADGES = [
 ];
 
 export const STATS = [
+  { value: "80%", label: "Risparmio in Bolletta", icon: "trending" },
   { value: "500+", label: "Impianti Installati", icon: "zap" },
   { value: "98%", label: "Clienti Soddisfatti", icon: "star" },
   { value: "\u20AC 2M", label: "Risparmiati dai Clienti", icon: "trending" },
@@ -165,37 +170,49 @@ export const TESTIMONIALS = [
 export const SERVICES = [
   {
     title: "Impianti Fotovoltaici",
-    desc: "Progettiamo e installiamo impianti fotovoltaici chiavi in mano da 3 kW a oltre 50 kW per privati e aziende, con moduli ad alta efficienza.",
+    desc: "Progettiamo e installiamo impianti fotovoltaici residenziali e commerciali su misura. Pannelli monocristallini di ultima generazione, massima efficienza e resa garantita.",
     icon: "sun",
     image: "https://images.unsplash.com/photo-1771479755134-9c1e3143c110",
   },
   {
     title: "Sistemi di Accumulo",
-    desc: "Batterie al litio di ultima generazione da 5 kWh a 20 kWh per massimizzare l'autoconsumo e garantire energia anche di notte.",
+    desc: "Batterie al litio di ultima generazione da 5 kWh a 20 kWh per immagazzinare l'energia e utilizzarla quando serve: la sera, di notte o nelle giornate nuvolose.",
     icon: "battery",
     image: "https://images.unsplash.com/photo-1766507679659-30076abc8c95",
   },
   {
     title: "Pompe di Calore",
-    desc: "Soluzioni a pompa di calore per riscaldamento, raffrescamento e acqua calda sanitaria. Elimina il gas e abbatti la bolletta.",
+    desc: "Elimina la caldaia a gas! Le pompe di calore riscaldano e raffrescano la tua casa con efficienza COP fino a 5.0, alimentate dal tuo impianto fotovoltaico.",
     icon: "thermometer",
     image: "https://images.unsplash.com/photo-1776860150305-108ed577d7d4",
   },
   {
-    title: "Pratiche ENEA & GSE",
-    desc: "Gestiamo per te tutta la burocrazia: pratiche ENEA, GSE, connessione alla rete e detrazioni fiscali. Tu non muovi un dito.",
+    title: "Pratiche di Connessione",
+    desc: "Gestiamo tutte le pratiche per la connessione del tuo impianto alla rete elettrica con e-distribuzione. Dall'inizio alla fine, senza stress.",
+    icon: "file-check",
+    image: "https://images.unsplash.com/photo-1560618259-dff83f6cacbd",
+  },
+  {
+    title: "Pratiche ENEA",
+    desc: "Ci occupiamo della comunicazione all'ENEA per le detrazioni fiscali. Nessun rischio di errori o ritardi: tutto gestito da tecnici abilitati.",
+    icon: "file-check",
+    image: "https://images.unsplash.com/photo-1662340712175-349cd23a63d6",
+  },
+  {
+    title: "Rapporti col GSE",
+    desc: "Gestiamo i rapporti con il Gestore dei Servizi Energetici per lo Scambio sul Posto, il Ritiro Dedicato e gli incentivi disponibili.",
     icon: "file-check",
     image: "https://images.unsplash.com/photo-1560618259-dff83f6cacbd",
   },
   {
     title: "APE - Attestato Energetico",
-    desc: "Rilasciamo l'Attestato di Prestazione Energetica certificato da tecnici abilitati per ogni tipologia di immobile.",
+    desc: "Rilasciamo l'Attestato di Prestazione Energetica certificato da tecnici abilitati per vendita, affitto e interventi di ristrutturazione.",
     icon: "award",
     image: "https://images.unsplash.com/photo-1662340712175-349cd23a63d6",
   },
   {
     title: "Condizionatori",
-    desc: "Climatizzatori inverter ad alta efficienza in classe A+++. Installazione professionale e assistenza post-vendita.",
+    desc: "Climatizzatori inverter ad alta efficienza in classe A+++. Comfort in estate, risparmio tutto l'anno. Installazione professionale e assistenza post-vendita.",
     icon: "wind",
     image: "https://images.unsplash.com/photo-1766788466565-768128d89ce4",
   },
@@ -252,38 +269,96 @@ export const PROJECTS = [
   },
 ];
 
+export const FAQ_CATEGORIES = [
+  "Tutti",
+  "Fotovoltaico",
+  "Installazione",
+  "Pratiche e Incentivi",
+  "Pompe di Calore",
+  "Tecnico",
+  "Garanzie",
+];
+
 export const FAQS = [
   {
-    q: "Quanto costa un impianto fotovoltaico chiavi in mano?",
-    a: "Il prezzo dipende dalla potenza dell'impianto e dal sistema di accumulo. I nostri pacchetti partono da soluzioni Essential da 6 kW fino al pacchetto Elite da 9 kW con batteria da 20 kWh. Tutti includono installazione, pratiche e garanzie. Richiedi un preventivo gratuito per un calcolo personalizzato.",
+    category: "Fotovoltaico",
+    q: "Quanto costa un impianto fotovoltaico da 6 kW?",
+    a: "Un impianto fotovoltaico da 6 kW con accumulo da 5-10 kWh chiavi in mano parte indicativamente da 9.500 \u20AC IVA inclusa, comprensivo di pannelli monocristallini, inverter ibrido, batteria, installazione, pratiche ENEA/GSE e garanzie. Il prezzo finale dipende dal tipo di tetto, dall'accumulo scelto e dalle eventuali pompe di calore abbinate. Richiedi un preventivo gratuito per un calcolo personalizzato.",
   },
   {
-    q: "In quanto tempo si installa l'impianto?",
-    a: "L'installazione viene completata mediamente in 2-3 giorni lavorativi. Dal sopralluogo alla messa in esercizio passano normalmente 30-45 giorni, considerando le pratiche burocratiche con GSE ed e-distribuzione.",
+    category: "Fotovoltaico",
+    q: "Quanto posso risparmiare sulla bolletta?",
+    a: "Con un sistema fotovoltaico con accumulo ben dimensionato puoi raggiungere fino all'80% di risparmio sulla bolletta elettrica. Abbinando una pompa di calore puoi arrivare al 95% di indipendenza energetica eliminando completamente il gas. Il risparmio medio dei nostri clienti supera i 1.000 \u20AC l'anno.",
   },
   {
-    q: "Esistono finanziamenti a tasso zero?",
-    a: "S\u00EC, offriamo finanziamenti a tasso zero fino a 96 mesi tramite primarie societ\u00E0 finanziarie convenzionate. Puoi installare l'impianto senza anticipo e pagare con rate gi\u00E0 coperte dal risparmio in bolletta.",
+    category: "Fotovoltaico",
+    q: "In quanto tempo si ripaga l'investimento?",
+    a: "Il tempo di ritorno dell'investimento (payback) di un impianto fotovoltaico con accumulo si attesta mediamente tra i 5 e i 7 anni, grazie al risparmio in bolletta, alle detrazioni fiscali e agli incentivi GSE. Considerando una vita utile di oltre 25 anni, l'impianto continua a produrre energia gratuita per circa 20 anni dopo essersi ripagato.",
   },
   {
-    q: "Quanto risparmio sulla bolletta?",
-    a: "Con un sistema fotovoltaico con accumulo ben dimensionato puoi raggiungere fino all'80% di risparmio sulla bolletta elettrica. In casi di abbinamento con pompa di calore arrivi anche al 95% di indipendenza energetica.",
+    category: "Fotovoltaico",
+    q: "Conviene passare a 9 kW con 15 kWh di accumulo?",
+    a: "S\u00EC, se hai consumi elevati (oltre 5.000 kWh/anno), una famiglia numerosa, una pompa di calore o un'auto elettrica. Un impianto da 9 kW + 15 kWh produce fino a 13.500 kWh/anno e copre fino al 95% del fabbisogno, garantendo massima indipendenza dalla rete. \u00C8 la scelta ideale per chi vuole eliminare quasi del tutto la bolletta.",
   },
   {
-    q: "Quali garanzie offrite?",
-    a: "Offriamo garanzia prodotto fino a 25 anni sui moduli, 10-15 anni sull'inverter, 10 anni sulla batteria e 10 anni sull'installazione. Inoltre garantiamo la produzione lineare per tutta la vita utile dell'impianto.",
+    category: "Installazione",
+    q: "Quanto tempo richiede l'installazione?",
+    a: "L'installazione fisica dell'impianto viene completata mediamente in 2-3 giorni lavorativi. Dal sopralluogo alla messa in esercizio passano normalmente 30-45 giorni, considerando le pratiche burocratiche con e-distribuzione e GSE.",
   },
   {
-    q: "Vi occupate delle pratiche burocratiche?",
-    a: "Assolutamente s\u00EC. Gestiamo per te le pratiche ENEA per le detrazioni fiscali, la connessione alla rete con e-distribuzione, l'attivazione del Ritiro Dedicato con GSE e l'eventuale APE. Tu non devi muovere un dito.",
+    category: "Installazione",
+    q: "Il mio tetto \u00E8 adatto per i pannelli solari?",
+    a: "La maggior parte dei tetti italiani sono idonei. L'orientamento ideale \u00E8 a sud, ma anche est-ovest danno ottimi risultati. Valutiamo gratuitamente la pendenza, le ombreggiature, lo spazio disponibile e l'integrit\u00E0 strutturale durante il sopralluogo. Esistono soluzioni anche per tetti piani, in lamiera, in coppi o tegole.",
   },
   {
-    q: "Come funziona il monitoraggio dell'impianto?",
-    a: "Ogni impianto include un sistema di monitoraggio via app e portale web. Puoi controllare in tempo reale la produzione, il consumo, il livello di carica della batteria e l'autoconsumo, anche da smartphone.",
+    category: "Installazione",
+    q: "Servono permessi per installare i pannelli?",
+    a: "Per la maggior parte degli impianti residenziali \u00E8 sufficiente la Comunicazione di Edilizia Libera in regime di Modello Unico, che presentiamo noi al gestore di rete. Per immobili in centro storico, vincolati o sottoposti a tutela paesaggistica gestiamo le autorizzazioni comunali e della Soprintendenza.",
   },
   {
-    q: "Posso installare anche una pompa di calore?",
-    a: "Certamente. Le pompe di calore si abbinano perfettamente al fotovoltaico per riscaldamento, raffrescamento e acqua calda sanitaria. Eliminando il gas, ottieni una casa 100% elettrica e indipendente.",
+    category: "Pratiche e Incentivi",
+    q: "Quali incentivi sono disponibili?",
+    a: "Sono attivi: la detrazione fiscale 50% in 10 anni sul fotovoltaico residenziale, lo Scambio sul Posto / Ritiro Dedicato GSE per la valorizzazione dell'energia immessa, l'IVA agevolata al 10% e, per le pompe di calore, l'Ecobonus fino al 65%. Ti aiutiamo a scegliere la combinazione pi\u00F9 vantaggiosa per il tuo caso.",
+  },
+  {
+    category: "Pratiche e Incentivi",
+    q: "Cosa sono le pratiche ENEA e GSE?",
+    a: "ENEA \u00E8 l'agenzia che gestisce le comunicazioni obbligatorie per le detrazioni fiscali sugli interventi di efficienza energetica. GSE (Gestore dei Servizi Energetici) regola lo Scambio sul Posto, il Ritiro Dedicato e gli incentivi sull'energia rinnovabile. Ci occupiamo di entrambe le pratiche al posto tuo, garantendo tempi e correttezza.",
+  },
+  {
+    category: "Pratiche e Incentivi",
+    q: "Cos'\u00E8 l'APE e quando serve?",
+    a: "L'APE (Attestato di Prestazione Energetica) certifica la classe energetica dell'immobile. \u00C8 obbligatorio per la vendita, l'affitto, le ristrutturazioni rilevanti e per accedere a determinati incentivi. Lo rilasciamo internamente tramite tecnici abilitati, integrandolo nei progetti di efficientamento.",
+  },
+  {
+    category: "Pratiche e Incentivi",
+    q: "Posso accedere a finanziamenti?",
+    a: "S\u00EC, offriamo finanziamenti a tasso zero fino a 96 mesi tramite primarie societ\u00E0 finanziarie convenzionate. Puoi installare l'impianto senza anticipo e pagare con rate gi\u00E0 coperte dal risparmio in bolletta. Risposta della finanziaria entro 24-48 ore.",
+  },
+  {
+    category: "Pompe di Calore",
+    q: "Cosa sono le pompe di calore?",
+    a: "Sono sistemi che riscaldano e raffrescano la casa producendo anche acqua calda sanitaria, alimentati ad energia elettrica e con un'efficienza COP fino a 5.0 (per ogni 1 kWh consumato producono fino a 5 kWh di calore). Abbinati al fotovoltaico permettono di eliminare il gas e ridurre drasticamente la bolletta.",
+  },
+  {
+    category: "Pompe di Calore",
+    q: "Posso eliminare la caldaia a gas?",
+    a: "Assolutamente s\u00EC. Sostituendo la caldaia a gas con una pompa di calore aria-acqua e abbinandola al fotovoltaico, puoi eliminare la fornitura di gas con un risparmio annuo di 800-1.500 \u20AC. Con il giusto dimensionamento, riscaldamento, raffrescamento e acqua calda sono coperti al 100% da fonte rinnovabile.",
+  },
+  {
+    category: "Tecnico",
+    q: "I pannelli funzionano anche in inverno?",
+    a: "S\u00EC. I pannelli monocristallini producono anche in inverno e con cielo nuvoloso, seppur a regimi pi\u00F9 ridotti. Le basse temperature in realt\u00E0 migliorano l'efficienza dei moduli. La produzione invernale tipica si attesta intorno al 30-40% di quella estiva ed \u00E8 sufficiente, con un buon accumulo, a coprire la maggior parte dei consumi.",
+  },
+  {
+    category: "Tecnico",
+    q: "Che manutenzione richiedono i pannelli?",
+    a: "Pochissima. I pannelli monocristallini si autopuliscono con la pioggia e non hanno parti meccaniche in movimento. Consigliamo un controllo tecnico ogni 2 anni e una pulizia in zone particolarmente polverose. Il monitoraggio via app segnala automaticamente eventuali anomalie di produzione.",
+  },
+  {
+    category: "Garanzie",
+    q: "Che garanzie offrite?",
+    a: "Offriamo garanzia prodotto fino a 25 anni sui moduli, 10-15 anni sull'inverter, 10 anni sulla batteria di accumulo e 10 anni sull'installazione. Inoltre garantiamo la produzione lineare per tutta la vita utile dell'impianto: i pannelli mantengono almeno l'85% della potenza nominale dopo 25 anni.",
   },
 ];
 
