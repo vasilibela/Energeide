@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { Shield, Mail, Phone, MapPin, FileText } from "lucide-react";
+import { Shield, Mail, Phone, FileText } from "lucide-react";
 import { SITE } from "../data/mock";
 import { PageHero } from "./ChiSiamo";
 
@@ -131,12 +131,6 @@ const PrivacyPolicy = () => (
             <strong className="text-white">ENERGEIDE S.r.l.</strong>
           </p>
           <ul className="space-y-3 text-sm">
-            <li className="flex items-start gap-3 text-gray-200">
-              <MapPin className="w-4 h-4 text-[#0FB36B] mt-0.5 shrink-0" />
-              <span>
-                Sede Legale: {SITE.addressLine1}, {SITE.addressLine2}
-              </span>
-            </li>
             <li className="flex items-center gap-3 text-gray-200">
               <FileText className="w-4 h-4 text-[#0FB36B] shrink-0" />
               <span>{SITE.vat}</span>
