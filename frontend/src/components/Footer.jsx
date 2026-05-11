@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { Phone, Mail, Facebook, Instagram, MapPin, Clock } from "lucide-react";
+import { Phone, Mail, Facebook, Instagram, Clock } from "lucide-react";
 import { SITE } from "../data/mock";
 
 const Footer = () => {
@@ -114,14 +114,6 @@ const Footer = () => {
                   <Mail className="w-4 h-4 text-[#0FB36B]" />
                   {SITE.email}
                 </a>
-              </li>
-              <li className="flex items-start gap-2 text-gray-300">
-                <MapPin className="w-4 h-4 text-[#0FB36B] mt-0.5 shrink-0" />
-                <span className="leading-snug">
-                  {SITE.addressLine1}
-                  <br />
-                  {SITE.addressLine2}
-                </span>
               </li>
               <li className="flex items-start gap-2 text-gray-300">
                 <Clock className="w-4 h-4 text-[#0FB36B] mt-0.5 shrink-0" />

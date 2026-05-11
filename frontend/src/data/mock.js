@@ -364,18 +364,23 @@ export const FAQS = [
 
 export const TEAM_VALUES = [
   {
-    title: "Trasparenza",
-    desc: "Preventivi chiari, senza costi nascosti. Spieghiamo ogni voce e ogni componente del tuo impianto.",
-    icon: "eye",
+    title: "Eliminare il Gas",
+    desc: "La nostra missione principale: aiutare le famiglie italiane a eliminare completamente la dipendenza dal gas, passando a soluzioni elettriche efficienti.",
+    icon: "flame",
   },
   {
-    title: "Qualit\u00E0",
-    desc: "Lavoriamo solo con i migliori brand del settore. Componenti certificati e installazioni a regola d'arte.",
-    icon: "award",
+    title: "Massimo Risparmio",
+    desc: "Analizziamo i tuoi consumi energetici per trovare la soluzione che ti fa risparmiare il pi\u00F9 possibile, riducendo il fabbisogno al minimo.",
+    icon: "piggy",
   },
   {
-    title: "Assistenza",
-    desc: "Non ti lasciamo solo dopo l'installazione. Supporto tecnico continuo per tutta la vita dell'impianto.",
-    icon: "headphones",
+    title: "Sostenibilit\u00E0",
+    desc: "Ogni impianto che installiamo \u00E8 un passo verso un futuro pi\u00F9 verde. Riduciamo le emissioni di CO2 e proteggiamo l'ambiente.",
+    icon: "leaf",
+  },
+  {
+    title: "Consulenza Personale",
+    desc: "Non siamo venditori: siamo consulenti. Ti ascoltiamo, capiamo le tue esigenze e ti guidiamo verso la scelta migliore per te.",
+    icon: "users",
   },
 ];
