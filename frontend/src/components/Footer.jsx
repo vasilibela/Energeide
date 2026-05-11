@@ -133,12 +133,12 @@ const Footer = () => {
             riservati. {SITE.vat}
           </p>
           <div className="flex gap-5">
-            <a href="#" className="hover:text-[#F4C542]">
+            <Link to="/privacy-policy" className="hover:text-[#F4C542]">
               Privacy Policy
-            </a>
-            <a href="#" className="hover:text-[#F4C542]">
+            </Link>
+            <Link to="/termini-e-condizioni" className="hover:text-[#F4C542]">
               Termini e Condizioni
-            </a>
+            </Link>
           </div>
         </div>
       </div>

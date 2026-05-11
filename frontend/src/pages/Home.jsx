@@ -13,6 +13,7 @@ import {
   Lightbulb,
   MapPin,
   Facebook,
+  ExternalLink,
 } from "lucide-react";
 import {
   HERO_BADGES,
@@ -362,10 +363,21 @@ const TestimonialsSection = () => (
         ))}
       </div>
       <div className="text-center mt-10">
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-gray-500 mb-5">
           Risparmio medio annuale:{" "}
           <strong className="text-[#0FB36B]">€1.000+</strong> per cliente
         </p>
+        <a
+          href="https://it.trustpilot.com/review/energeide.it"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="group inline-flex items-center justify-center gap-2 bg-[#00B67A] hover:bg-[#009E69] text-white rounded-md px-6 h-11 font-montserrat font-bold text-sm transition-colors shadow-md hover:shadow-lg"
+        >
+          <Star className="w-4 h-4 fill-white" />
+          Scrivi una recensione su di noi
+          <ExternalLink className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+        </a>
+        <p className="text-xs text-gray-400 mt-2">Su Trustpilot</p>
       </div>
     </div>
   </section>

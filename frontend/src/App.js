@@ -16,6 +16,8 @@ import Progetti from "./pages/Progetti";
 import FAQ from "./pages/FAQ";
 import Contatti from "./pages/Contatti";
 import News from "./pages/News";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import TerminiCondizioni from "./pages/TerminiCondizioni";
 
 const ScrollToTop = () => {
   const { pathname } = useLocation();
@@ -38,6 +40,8 @@ const Layout = () => (
         <Route path="/faq" element={<FAQ />} />
         <Route path="/contatti" element={<Contatti />} />
         <Route path="/news" element={<News />} />
+        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+        <Route path="/termini-e-condizioni" element={<TerminiCondizioni />} />
         <Route path="*" element={<Home />} />
       </Routes>
     </main>
