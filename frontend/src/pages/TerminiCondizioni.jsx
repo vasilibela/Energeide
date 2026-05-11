@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { ScrollText, Mail, Phone, FileText } from "lucide-react";
 import { SITE } from "../data/mock";
 import { PageHero } from "./ChiSiamo";
+import Seo from "../components/Seo";
 
 const SECTIONS = [
   {
@@ -147,6 +148,11 @@ const SECTIONS = [
 
 const TerminiCondizioni = () => (
   <>
+    <Seo
+      title="Termini e Condizioni"
+      description="Termini e condizioni che regolano l'utilizzo del sito energeide.it e dei servizi forniti da ENERGEIDE S.r.l."
+      path="/termini-e-condizioni"
+    />
     <PageHero
       eyebrow="CONDIZIONI DI UTILIZZO"
       title="Termini e Condizioni"

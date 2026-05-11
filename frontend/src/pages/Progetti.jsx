@@ -11,6 +11,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { PageHero } from "./ChiSiamo";
+import Seo from "../components/Seo";
 
 const FILTERS = ["Tutti", "Residenziale", "Commerciale", "Industriale"];
 
@@ -52,6 +53,11 @@ const Progetti = () => {
 
   return (
     <>
+      <Seo
+        title="Progetti realizzati"
+        description="Scopri gli impianti fotovoltaici realizzati da Energeide per famiglie, attività commerciali e aziende in tutta Italia. Casi reali con dati di potenza e risparmio."
+        path="/progetti"
+      />
       <PageHero
         eyebrow="PROGETTI"
         title="I nostri lavori, la tua ispirazione"

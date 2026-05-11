@@ -24,6 +24,7 @@ import {
   SITE,
 } from "../data/mock";
 import FacebookFeed from "../components/FacebookFeed";
+import Seo from "../components/Seo";
 
 const iconMap = {
   zap: Zap,
@@ -483,6 +484,7 @@ const CTASection = () => (
 
 const Home = () => (
   <>
+    <Seo path="/" />
     <HeroSection />
     <StatsSection />
     <PricingSection />

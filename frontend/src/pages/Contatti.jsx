@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { SITE } from "../data/mock";
 import { PageHero } from "./ChiSiamo";
+import Seo from "../components/Seo";
 
 const Contatti = () => {
   const [form, setForm] = useState({
@@ -55,6 +56,11 @@ const Contatti = () => {
 
   return (
     <>
+      <Seo
+        title="Contatti - Richiedi Preventivo"
+        description="Contatta Energeide per un preventivo gratuito sul tuo impianto fotovoltaico. Telefono, email, WhatsApp: rispondiamo entro 24 ore."
+        path="/contatti"
+      />
       <PageHero
         eyebrow="CONTATTI"
         title="Richiedi un preventivo gratuito"

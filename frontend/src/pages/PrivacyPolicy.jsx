@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Shield, Mail, Phone, FileText } from "lucide-react";
 import { SITE } from "../data/mock";
 import { PageHero } from "./ChiSiamo";
+import Seo from "../components/Seo";
 
 const SECTIONS = [
   {
@@ -85,6 +86,11 @@ const SECTIONS = [
 
 const PrivacyPolicy = () => (
   <>
+    <Seo
+      title="Privacy Policy"
+      description="Informativa sul trattamento dei dati personali da parte di ENERGEIDE S.r.l. in conformità con il GDPR."
+      path="/privacy-policy"
+    />
     <PageHero
       eyebrow="INFORMATIVA SULLA PRIVACY"
       title="Privacy Policy"

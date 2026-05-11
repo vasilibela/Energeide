@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { SERVICES } from "../data/mock";
 import { PageHero } from "./ChiSiamo";
+import Seo from "../components/Seo";
 
 const iconMap = {
   sun: Sun,
@@ -24,6 +25,11 @@ const iconMap = {
 
 const Servizi = () => (
   <>
+    <Seo
+      title="Servizi"
+      description="Impianti fotovoltaici, sistemi di accumulo, pompe di calore, pratiche ENEA e GSE, condizionatori e APE: tutti i servizi chiavi in mano di Energeide."
+      path="/servizi"
+    />
     <PageHero
       eyebrow="SERVIZI"
       title="Soluzioni complete per la tua casa"

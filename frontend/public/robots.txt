@@ -1,0 +1,6 @@
+# robots.txt - Energeide
+User-agent: *
+Allow: /
+Disallow: /api/
+
+Sitemap: https://energeide.it/sitemap.xml

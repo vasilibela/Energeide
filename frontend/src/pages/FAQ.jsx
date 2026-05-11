@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { ArrowRight, Plus, Minus, HelpCircle } from "lucide-react";
 import { FAQS, FAQ_CATEGORIES } from "../data/mock";
 import { PageHero } from "./ChiSiamo";
+import Seo from "../components/Seo";
 
 const FAQ = () => {
   const [activeCategory, setActiveCategory] = useState("Tutti");
@@ -20,6 +21,11 @@ const FAQ = () => {
 
   return (
     <>
+      <Seo
+        title="FAQ - Domande Frequenti"
+        description="Risposte alle domande più comuni su fotovoltaico, pompe di calore, installazione, incentivi fiscali, pratiche ENEA e GSE, garanzie e manutenzione."
+        path="/faq"
+      />
       <PageHero
         eyebrow="DOMANDE FREQUENTI"
         title="Tutto quello che vuoi sapere"

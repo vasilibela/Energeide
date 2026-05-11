@@ -4,9 +4,15 @@ import { ArrowRight, Facebook, Sparkles, Users, Calendar } from "lucide-react";
 import { SITE } from "../data/mock";
 import { PageHero } from "./ChiSiamo";
 import FacebookFeed from "../components/FacebookFeed";
+import Seo from "../components/Seo";
 
 const News = () => (
   <>
+    <Seo
+      title="Blog"
+      description="Resta aggiornato sulle nostre attività: installazioni, novità dal mondo del fotovoltaico e consigli per risparmiare in bolletta."
+      path="/news"
+    />
     <PageHero
       eyebrow="BLOG"
       title="Blog"

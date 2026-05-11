@@ -9,6 +9,7 @@ import {
   PiggyBank,
 } from "lucide-react";
 import { TEAM_VALUES } from "../data/mock";
+import Seo from "../components/Seo";
 
 const iconMap = {
   flame: Flame,
@@ -63,6 +64,11 @@ const MISSION_POINTS = [
 
 const ChiSiamo = () => (
   <>
+    <Seo
+      title="Chi Siamo"
+      description="Energeide: consulenti energetici con una missione chiara - aiutare le famiglie italiane ad eliminare il gas e risparmiare il più possibile sull'energia."
+      path="/chi-siamo"
+    />
     <PageHero
       large
       title="Chi Siamo"
