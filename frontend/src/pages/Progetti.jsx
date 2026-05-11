@@ -114,7 +114,8 @@ const Progetti = () => {
                       <img
                         src={p.image}
                         alt={p.title}
-                        loading="lazy"
+                        loading="eager"
+                        referrerPolicy="no-referrer"
                         onError={(e) => {
                           e.currentTarget.style.display = "none";
                         }}

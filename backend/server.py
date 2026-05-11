@@ -5,6 +5,7 @@ from motor.motor_asyncio import AsyncIOMotorClient
 import os
 import csv
 import io
+import re
 import time
 import httpx
 import logging
@@ -82,6 +83,36 @@ async def get_status_checks():
 # -------------------------------------------------------------------
 # PROJECTS - sincronizzati con Google Sheet pubblico
 # -------------------------------------------------------------------
+_DRIVE_PATTERNS = [
+    # https://drive.google.com/file/d/FILE_ID/view?usp=sharing
+    re.compile(r"drive\.google\.com/file/d/([A-Za-z0-9_-]{20,})"),
+    # https://drive.google.com/open?id=FILE_ID
+    re.compile(r"drive\.google\.com/open\?id=([A-Za-z0-9_-]{20,})"),
+    # https://drive.google.com/uc?...id=FILE_ID  e https://drive.google.com/thumbnail?id=FILE_ID
+    re.compile(r"drive\.google\.com/(?:uc|thumbnail)[^\"'\s]*[?&]id=([A-Za-z0-9_-]{20,})"),
+]
+
+
+def _normalize_image_url(url: str) -> str:
+    """Converte i link di condivisione di Google Drive in URL incorporabili.
+
+    Drive non serve direttamente i file `view`. L'endpoint
+    `drive.google.com/thumbnail?id=...&sz=w1600` invece restituisce sempre un
+    JPEG/PNG senza la pagina di avviso, quindi e' perfetto per essere usato
+    come `src` di un tag <img>.
+    Per gli altri URL (Unsplash, Imgur, ecc.) ritorna il valore originale.
+    """
+    if not url:
+        return ""
+    u = url.strip()
+    for pattern in _DRIVE_PATTERNS:
+        m = pattern.search(u)
+        if m:
+            file_id = m.group(1)
+            return f"https://drive.google.com/thumbnail?id={file_id}&sz=w1600"
+    return u
+
+
 def _parse_projects_csv(csv_text: str) -> List[dict]:
     """Parse the Google Sheet CSV export and normalise the rows."""
     reader = csv.DictReader(io.StringIO(csv_text))
@@ -121,7 +152,7 @@ def _parse_projects_csv(csv_text: str) -> List[dict]:
             "storage": storage,
             "year": row.get("Data", ""),
             "type": row.get("Tipo", "Residenziale") or "Residenziale",
-            "image": row.get("URL Immagine", ""),
+            "image": _normalize_image_url(row.get("URL Immagine", "")),
             "description": row.get("Descrizione", ""),
         })
     return projects
