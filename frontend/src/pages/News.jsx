@@ -8,9 +8,9 @@ import FacebookFeed from "../components/FacebookFeed";
 const News = () => (
   <>
     <PageHero
-      eyebrow="NEWS & SOCIAL"
-      title="Resta aggiornato sulle nostre attivit\u00E0"
-      subtitle="Installazioni, novit\u00E0 dal mondo del fotovoltaico, consigli per risparmiare in bolletta. Tutti i nostri ultimi post direttamente dalla nostra Pagina Facebook."
+      eyebrow="BLOG"
+      title="Blog"
+      subtitle="Resta aggiornato sulle nostre attività"
     />
 
     <section className="py-16 sm:py-20 bg-white">

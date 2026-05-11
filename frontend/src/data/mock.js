@@ -283,82 +283,82 @@ export const FAQS = [
   {
     category: "Fotovoltaico",
     q: "Quanto costa un impianto fotovoltaico da 6 kW?",
-    a: "Un impianto fotovoltaico da 6 kW con accumulo da 5-10 kWh chiavi in mano parte indicativamente da 9.500 \u20AC IVA inclusa, comprensivo di pannelli monocristallini, inverter ibrido, batteria, installazione, pratiche ENEA/GSE e garanzie. Il prezzo finale dipende dal tipo di tetto, dall'accumulo scelto e dalle eventuali pompe di calore abbinate. Richiedi un preventivo gratuito per un calcolo personalizzato.",
+    a: "Un impianto da 6 kW con 10 kWh di accumulo parte da 8.900\u20AC chiavi in mano, IVA inclusa. Il prezzo varia in base alla qualit\u00E0 dei componenti e ai servizi aggiuntivi. Offriamo tre soluzioni: Essential, Premium ed Elite.",
   },
   {
     category: "Fotovoltaico",
     q: "Quanto posso risparmiare sulla bolletta?",
-    a: "Con un sistema fotovoltaico con accumulo ben dimensionato puoi raggiungere fino all'80% di risparmio sulla bolletta elettrica. Abbinando una pompa di calore puoi arrivare al 95% di indipendenza energetica eliminando completamente il gas. Il risparmio medio dei nostri clienti supera i 1.000 \u20AC l'anno.",
+    a: "In media i nostri clienti risparmiano tra il 60% e l'80% sulla bolletta elettrica. Con un impianto da 6 kW e accumulo da 10 kWh, il risparmio annuale \u00E8 di circa 600-1.400\u20AC a seconda dei consumi e della soluzione scelta.",
   },
   {
     category: "Fotovoltaico",
     q: "In quanto tempo si ripaga l'investimento?",
-    a: "Il tempo di ritorno dell'investimento (payback) di un impianto fotovoltaico con accumulo si attesta mediamente tra i 5 e i 7 anni, grazie al risparmio in bolletta, alle detrazioni fiscali e agli incentivi GSE. Considerando una vita utile di oltre 25 anni, l'impianto continua a produrre energia gratuita per circa 20 anni dopo essersi ripagato.",
+    a: "Grazie agli incentivi fiscali e al risparmio in bolletta, un impianto fotovoltaico si ripaga mediamente in 5-7 anni. Con una durata di 25-30 anni, avrai oltre 20 anni di energia quasi gratuita.",
   },
   {
     category: "Fotovoltaico",
     q: "Conviene passare a 9 kW con 15 kWh di accumulo?",
-    a: "S\u00EC, se hai consumi elevati (oltre 5.000 kWh/anno), una famiglia numerosa, una pompa di calore o un'auto elettrica. Un impianto da 9 kW + 15 kWh produce fino a 13.500 kWh/anno e copre fino al 95% del fabbisogno, garantendo massima indipendenza dalla rete. \u00C8 la scelta ideale per chi vuole eliminare quasi del tutto la bolletta.",
+    a: "Se hai consumi elevati (pi\u00F9 di 5.000 kWh/anno), una famiglia numerosa, pompe di calore o un'auto elettrica, la soluzione da 9 kW + 15 kWh offre maggiore autonomia e un risparmio ancora pi\u00F9 significativo. Contattaci per una valutazione personalizzata.",
   },
   {
     category: "Installazione",
     q: "Quanto tempo richiede l'installazione?",
-    a: "L'installazione fisica dell'impianto viene completata mediamente in 2-3 giorni lavorativi. Dal sopralluogo alla messa in esercizio passano normalmente 30-45 giorni, considerando le pratiche burocratiche con e-distribuzione e GSE.",
+    a: "L'installazione fisica richiede 2-3 giorni lavorativi. I tempi totali, incluse le pratiche burocratiche e l'allacciamento alla rete, variano da 4 a 8 settimane.",
   },
   {
     category: "Installazione",
     q: "Il mio tetto \u00E8 adatto per i pannelli solari?",
-    a: "La maggior parte dei tetti italiani sono idonei. L'orientamento ideale \u00E8 a sud, ma anche est-ovest danno ottimi risultati. Valutiamo gratuitamente la pendenza, le ombreggiature, lo spazio disponibile e l'integrit\u00E0 strutturale durante il sopralluogo. Esistono soluzioni anche per tetti piani, in lamiera, in coppi o tegole.",
+    a: "La maggior parte dei tetti \u00E8 idonea. Offriamo un sopralluogo gratuito per valutare orientamento, inclinazione, ombre e struttura portante. Lavoriamo su tetti piani, inclinati e anche su tettoie.",
   },
   {
     category: "Installazione",
     q: "Servono permessi per installare i pannelli?",
-    a: "Per la maggior parte degli impianti residenziali \u00E8 sufficiente la Comunicazione di Edilizia Libera in regime di Modello Unico, che presentiamo noi al gestore di rete. Per immobili in centro storico, vincolati o sottoposti a tutela paesaggistica gestiamo le autorizzazioni comunali e della Soprintendenza.",
+    a: "Per impianti residenziali standard \u00E8 sufficiente una comunicazione al Comune (spesso in edilizia libera). Ci occupiamo noi di tutte le pratiche burocratiche, incluse quelle con il GSE.",
   },
   {
     category: "Pratiche e Incentivi",
     q: "Quali incentivi sono disponibili?",
-    a: "Sono attivi: la detrazione fiscale 50% in 10 anni sul fotovoltaico residenziale, lo Scambio sul Posto / Ritiro Dedicato GSE per la valorizzazione dell'energia immessa, l'IVA agevolata al 10% e, per le pompe di calore, l'Ecobonus fino al 65%. Ti aiutiamo a scegliere la combinazione pi\u00F9 vantaggiosa per il tuo caso.",
+    a: "\u00C8 disponibile la detrazione fiscale del 50% in 10 anni per ristrutturazioni edilizie. Per aziende esistono ulteriori agevolazioni. Ti aiutiamo a identificare tutti gli incentivi a cui hai diritto e gestiamo le pratiche ENEA.",
   },
   {
     category: "Pratiche e Incentivi",
     q: "Cosa sono le pratiche ENEA e GSE?",
-    a: "ENEA \u00E8 l'agenzia che gestisce le comunicazioni obbligatorie per le detrazioni fiscali sugli interventi di efficienza energetica. GSE (Gestore dei Servizi Energetici) regola lo Scambio sul Posto, il Ritiro Dedicato e gli incentivi sull'energia rinnovabile. Ci occupiamo di entrambe le pratiche al posto tuo, garantendo tempi e correttezza.",
+    a: "La pratica ENEA \u00E8 la comunicazione obbligatoria per ottenere le detrazioni fiscali. Il rapporto con il GSE serve per lo scambio sul posto dell'energia. Ci occupiamo di tutto noi, senza costi aggiuntivi.",
   },
   {
     category: "Pratiche e Incentivi",
     q: "Cos'\u00E8 l'APE e quando serve?",
-    a: "L'APE (Attestato di Prestazione Energetica) certifica la classe energetica dell'immobile. \u00C8 obbligatorio per la vendita, l'affitto, le ristrutturazioni rilevanti e per accedere a determinati incentivi. Lo rilasciamo internamente tramite tecnici abilitati, integrandolo nei progetti di efficientamento.",
+    a: "L'Attestato di Prestazione Energetica (APE) \u00E8 un documento che certifica la classe energetica dell'immobile. \u00C8 obbligatorio per vendita, affitto e per accedere ad alcuni incentivi. Lo rilasciamo noi.",
   },
   {
     category: "Pratiche e Incentivi",
     q: "Posso accedere a finanziamenti?",
-    a: "S\u00EC, offriamo finanziamenti a tasso zero fino a 96 mesi tramite primarie societ\u00E0 finanziarie convenzionate. Puoi installare l'impianto senza anticipo e pagare con rate gi\u00E0 coperte dal risparmio in bolletta. Risposta della finanziaria entro 24-48 ore.",
+    a: "S\u00EC, abbiamo convenzioni con primari istituti bancari per finanziamenti a tasso agevolato. Puoi dilazionare il pagamento in comode rate mensili, spesso coperte dal risparmio in bolletta.",
   },
   {
     category: "Pompe di Calore",
     q: "Cosa sono le pompe di calore?",
-    a: "Sono sistemi che riscaldano e raffrescano la casa producendo anche acqua calda sanitaria, alimentati ad energia elettrica e con un'efficienza COP fino a 5.0 (per ogni 1 kWh consumato producono fino a 5 kWh di calore). Abbinati al fotovoltaico permettono di eliminare il gas e ridurre drasticamente la bolletta.",
+    a: "Le pompe di calore sono sistemi che riscaldano e raffrescano la casa usando l'energia dell'aria esterna. Hanno un'efficienza 3-5 volte superiore alle caldaie a gas e possono essere alimentate dal fotovoltaico, eliminando completamente la bolletta del gas.",
   },
   {
     category: "Pompe di Calore",
     q: "Posso eliminare la caldaia a gas?",
-    a: "Assolutamente s\u00EC. Sostituendo la caldaia a gas con una pompa di calore aria-acqua e abbinandola al fotovoltaico, puoi eliminare la fornitura di gas con un risparmio annuo di 800-1.500 \u20AC. Con il giusto dimensionamento, riscaldamento, raffrescamento e acqua calda sono coperti al 100% da fonte rinnovabile.",
+    a: "S\u00EC, con un impianto fotovoltaico abbinato a una pompa di calore puoi eliminare completamente la caldaia a gas. La pompa di calore riscalda in inverno, raffresca in estate e produce acqua calda, tutto alimentato dall'energia solare.",
   },
   {
     category: "Tecnico",
     q: "I pannelli funzionano anche in inverno?",
-    a: "S\u00EC. I pannelli monocristallini producono anche in inverno e con cielo nuvoloso, seppur a regimi pi\u00F9 ridotti. Le basse temperature in realt\u00E0 migliorano l'efficienza dei moduli. La produzione invernale tipica si attesta intorno al 30-40% di quella estiva ed \u00E8 sufficiente, con un buon accumulo, a coprire la maggior parte dei consumi.",
+    a: "S\u00EC, i pannelli producono energia anche in inverno e con cielo nuvoloso, seppur in quantit\u00E0 ridotta. La produzione annuale \u00E8 ottimizzata per garantire il risparmio previsto.",
   },
   {
     category: "Tecnico",
     q: "Che manutenzione richiedono i pannelli?",
-    a: "Pochissima. I pannelli monocristallini si autopuliscono con la pioggia e non hanno parti meccaniche in movimento. Consigliamo un controllo tecnico ogni 2 anni e una pulizia in zone particolarmente polverose. Il monitoraggio via app segnala automaticamente eventuali anomalie di produzione.",
+    a: "I pannelli richiedono pochissima manutenzione: una pulizia annuale e un controllo tecnico ogni 2-3 anni. Offriamo piani di manutenzione programmata inclusi nelle soluzioni Premium ed Elite.",
   },
   {
     category: "Garanzie",
     q: "Che garanzie offrite?",
-    a: "Offriamo garanzia prodotto fino a 25 anni sui moduli, 10-15 anni sull'inverter, 10 anni sulla batteria di accumulo e 10 anni sull'installazione. Inoltre garantiamo la produzione lineare per tutta la vita utile dell'impianto: i pannelli mantengono almeno l'85% della potenza nominale dopo 25 anni.",
+    a: "Offriamo garanzia sui pannelli fino a 25 anni (produttore), sull'inverter 10-15 anni, sulle batterie fino a 15 anni, e sulla manodopera 10 anni. Ogni componente \u00E8 certificato e di primaria marca.",
   },
 ];
 
