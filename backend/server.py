@@ -165,6 +165,15 @@ def _parse_projects_csv(csv_text: str) -> List[dict]:
             power = parts[0]
             storage = parts[1] if len(parts) > 1 else ""
 
+        # URL immagini: una cella può contenere più URL separati da virgola
+        # o da a-capo. Normalizziamo i link Drive e teniamo l'ordine originale.
+        raw_images = row.get("URL Immagine", "") or ""
+        image_urls: List[str] = []
+        for chunk in re.split(r"[,\n]", raw_images):
+            cleaned = chunk.strip()
+            if cleaned:
+                image_urls.append(_normalize_image_url(cleaned))
+
         projects.append({
             "id": row.get("ID") or str(uuid.uuid4()),
             "title": title,
@@ -174,7 +183,8 @@ def _parse_projects_csv(csv_text: str) -> List[dict]:
             "storage": storage,
             "year": row.get("Data", ""),
             "type": row.get("Tipo", "Residenziale") or "Residenziale",
-            "image": _normalize_image_url(row.get("URL Immagine", "")),
+            "image": image_urls[0] if image_urls else "",  # backward compat
+            "images": image_urls,
             "description": row.get("Descrizione", ""),
         })
     return projects
@@ -377,7 +387,8 @@ class BlogPost(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     title: str
     content: str
-    image_url: str = ""
+    images: List[str] = Field(default_factory=list)
+    image_url: str = ""  # backward compat (primo elemento di images)
     facebook_url: str = ""
     published_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
@@ -385,7 +396,8 @@ class BlogPost(BaseModel):
 class BlogPostCreate(BaseModel):
     title: str
     content: str
-    image_url: str = ""
+    images: List[str] = Field(default_factory=list)
+    image_url: str = ""  # accettato per compat; se images è vuoto, viene usato come singolo elemento
     facebook_url: str = ""
     published_at: str | None = None  # ISO 8601 opzionale
 
@@ -413,9 +425,15 @@ async def list_posts(limit: int = 50):
                 p["published_at"] = datetime.fromisoformat(p["published_at"])
             except ValueError:
                 p["published_at"] = datetime.now(timezone.utc)
-        # Normalizza i link di Google Drive in URL renderizzabili
-        if p.get("image_url"):
-            p["image_url"] = _normalize_image_url(p["image_url"])
+
+        # Compatibilità: i post vecchi avevano solo image_url, i nuovi hanno images.
+        images = p.get("images") or []
+        if not images and p.get("image_url"):
+            images = [p["image_url"]]
+        # Normalizza i link di Google Drive
+        images = [_normalize_image_url(u) for u in images if u]
+        p["images"] = images
+        p["image_url"] = images[0] if images else ""
     return posts
 
 
@@ -433,10 +451,16 @@ async def create_post(
         except ValueError:
             pass
 
+    # Unifica images + image_url legacy
+    images = [u.strip() for u in (payload.images or []) if u and u.strip()]
+    if not images and payload.image_url and payload.image_url.strip():
+        images = [payload.image_url.strip()]
+
     post = BlogPost(
         title=payload.title.strip(),
         content=payload.content.strip(),
-        image_url=payload.image_url.strip(),
+        images=images,
+        image_url=images[0] if images else "",
         facebook_url=payload.facebook_url.strip(),
         published_at=published_at,
     )

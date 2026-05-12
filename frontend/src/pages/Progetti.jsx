@@ -9,21 +9,30 @@ import {
   Loader2,
   RefreshCcw,
   AlertCircle,
+  Images as ImagesIcon,
 } from "lucide-react";
 import { PageHero } from "./ChiSiamo";
 import Seo from "../components/Seo";
 import ProjectsMap from "../components/ProjectsMap";
+import Lightbox from "../components/Lightbox";
 
 const FILTERS = ["Tutti", "Residenziale", "Commerciale", "Industriale"];
 
 const BACKEND_URL =
   process.env.REACT_APP_BACKEND_URL || import.meta?.env?.REACT_APP_BACKEND_URL;
 
+const getProjectImages = (p) => {
+  if (Array.isArray(p.images) && p.images.length > 0) return p.images;
+  if (p.image) return [p.image];
+  return [];
+};
+
 const Progetti = () => {
   const [active, setActive] = useState("Tutti");
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [gallery, setGallery] = useState({ open: false, images: [], index: 0, title: "" });
 
   const fetchProjects = async (refresh = false) => {
     setLoading(true);
@@ -51,6 +60,23 @@ const Progetti = () => {
     active === "Tutti"
       ? projects
       : projects.filter((p) => (p.type || "").toLowerCase() === active.toLowerCase());
+
+  const openGallery = (project, index = 0) => {
+    const imgs = getProjectImages(project);
+    if (imgs.length === 0) return;
+    setGallery({ open: true, images: imgs, index, title: project.title || "" });
+  };
+  const closeGallery = () => setGallery((g) => ({ ...g, open: false }));
+  const prev = () =>
+    setGallery((g) => ({
+      ...g,
+      index: (g.index - 1 + g.images.length) % g.images.length,
+    }));
+  const next = () =>
+    setGallery((g) => ({
+      ...g,
+      index: (g.index + 1) % g.images.length,
+    }));
 
   return (
     <>
@@ -113,73 +139,121 @@ const Progetti = () => {
 
           {!loading && !error && (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-7">
-              {filtered.map((p) => (
-                <article
-                  key={p.id || p.title}
-                  className="group bg-white border border-gray-100 rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300 flex flex-col"
-                >
-                  <div className="relative aspect-[4/3] overflow-hidden bg-gray-100">
-                    {p.image ? (
-                      <img
-                        src={p.image}
-                        alt={p.title}
-                        loading="eager"
-                        referrerPolicy="no-referrer"
-                        onError={(e) => {
-                          e.currentTarget.style.display = "none";
-                        }}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                      />
-                    ) : (
-                      <div className="absolute inset-0 flex items-center justify-center text-gray-300">
-                        <Sun className="w-16 h-16" />
+              {filtered.map((p) => {
+                const imgs = getProjectImages(p);
+                const cover = imgs[0];
+                const extraCount = imgs.length - 1;
+                return (
+                  <article
+                    key={p.id || p.title}
+                    className="group bg-white border border-gray-100 rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300 flex flex-col"
+                  >
+                    <button
+                      type="button"
+                      onClick={() => imgs.length > 0 && openGallery(p, 0)}
+                      disabled={imgs.length === 0}
+                      data-testid="project-cover"
+                      className="relative aspect-[4/3] overflow-hidden bg-gray-100 disabled:cursor-default cursor-zoom-in text-left"
+                    >
+                      {cover ? (
+                        <img
+                          src={cover}
+                          alt={p.title}
+                          loading="eager"
+                          referrerPolicy="no-referrer"
+                          onError={(e) => {
+                            e.currentTarget.style.display = "none";
+                          }}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        />
+                      ) : (
+                        <div className="absolute inset-0 flex items-center justify-center text-gray-300">
+                          <Sun className="w-16 h-16" />
+                        </div>
+                      )}
+                      {p.type && (
+                        <div className="absolute top-3 left-3 bg-[#F4C542] text-[#0A1F44] text-xs font-montserrat font-bold px-3 py-1 rounded-full">
+                          {p.type}
+                        </div>
+                      )}
+                      {extraCount > 0 ? (
+                        <div className="absolute bottom-3 right-3 inline-flex items-center gap-1.5 bg-black/65 backdrop-blur-sm text-white text-xs font-montserrat font-semibold px-2.5 py-1 rounded-full">
+                          <ImagesIcon className="w-3.5 h-3.5" />+{extraCount}
+                        </div>
+                      ) : null}
+                      <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/55 to-transparent pointer-events-none" />
+                    </button>
+                    <div className="p-6 flex flex-col flex-1">
+                      <h3 className="text-lg font-montserrat font-semibold text-[#0A1F44] mb-2 leading-snug">
+                        {p.title}
+                      </h3>
+                      {p.location && (
+                        <p className="flex items-center gap-1.5 text-xs text-gray-500 mb-3">
+                          <MapPin className="w-3.5 h-3.5" />
+                          <span>{p.location}</span>
+                        </p>
+                      )}
+                      {p.description && (
+                        <p className="text-sm text-gray-600 leading-relaxed mb-4 line-clamp-3">
+                          {p.description}
+                        </p>
+                      )}
+
+                      {imgs.length > 1 ? (
+                        <div className="flex gap-1.5 mb-4 flex-wrap">
+                          {imgs.slice(1, 5).map((src, i) => (
+                            <button
+                              key={src + i}
+                              type="button"
+                              onClick={() => openGallery(p, i + 1)}
+                              className="w-12 h-12 rounded-md overflow-hidden border border-gray-200 hover:border-[#F4C542] transition-colors"
+                              aria-label={`Apri foto ${i + 2}`}
+                            >
+                              <img
+                                src={src}
+                                alt=""
+                                referrerPolicy="no-referrer"
+                                className="w-full h-full object-cover"
+                                loading="lazy"
+                              />
+                            </button>
+                          ))}
+                          {imgs.length > 5 ? (
+                            <button
+                              type="button"
+                              onClick={() => openGallery(p, 5)}
+                              className="w-12 h-12 rounded-md bg-gray-100 hover:bg-gray-200 text-[#0A1F44] text-xs font-montserrat font-semibold transition-colors"
+                            >
+                              +{imgs.length - 5}
+                            </button>
+                          ) : null}
+                        </div>
+                      ) : null}
+
+                      <div className="flex flex-wrap gap-2 text-xs mt-auto pt-2">
+                        {p.power && (
+                          <span className="inline-flex items-center gap-1.5 text-[#0A1F44] bg-[#F4C542]/15 px-2.5 py-1 rounded-md font-semibold">
+                            <Sun className="w-3.5 h-3.5 text-[#F4C542]" />
+                            {p.power}
+                          </span>
+                        )}
+                        {p.storage && (
+                          <span className="inline-flex items-center gap-1.5 text-[#0A1F44] bg-[#0FB36B]/15 px-2.5 py-1 rounded-md font-semibold">
+                            <Battery className="w-3.5 h-3.5 text-[#0FB36B]" />
+                            {p.storage}
+                          </span>
+                        )}
+                        {p.year && (
+                          <span className="inline-flex items-center gap-1.5 text-gray-500 bg-gray-100 px-2.5 py-1 rounded-md">
+                            <Calendar className="w-3.5 h-3.5" />
+                            {p.year}
+                          </span>
+                        )}
                       </div>
-                    )}
-                    {p.type && (
-                      <div className="absolute top-3 left-3 bg-[#F4C542] text-[#0A1F44] text-xs font-montserrat font-bold px-3 py-1 rounded-full">
-                        {p.type}
-                      </div>
-                    )}
-                    <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/55 to-transparent pointer-events-none" />
-                  </div>
-                  <div className="p-6 flex flex-col flex-1">
-                    <h3 className="text-lg font-montserrat font-semibold text-[#0A1F44] mb-2 leading-snug">
-                      {p.title}
-                    </h3>
-                    {p.location && (
-                      <p className="flex items-center gap-1.5 text-xs text-gray-500 mb-3">
-                        <MapPin className="w-3.5 h-3.5" />
-                        <span>{p.location}</span>
-                      </p>
-                    )}
-                    {p.description && (
-                      <p className="text-sm text-gray-600 leading-relaxed mb-4 line-clamp-3">
-                        {p.description}
-                      </p>
-                    )}
-                    <div className="flex flex-wrap gap-2 text-xs mt-auto pt-2">
-                      {p.power && (
-                        <span className="inline-flex items-center gap-1.5 text-[#0A1F44] bg-[#F4C542]/15 px-2.5 py-1 rounded-md font-semibold">
-                          <Sun className="w-3.5 h-3.5 text-[#F4C542]" />
-                          {p.power}
-                        </span>
-                      )}
-                      {p.storage && (
-                        <span className="inline-flex items-center gap-1.5 text-[#0A1F44] bg-[#0FB36B]/15 px-2.5 py-1 rounded-md font-semibold">
-                          <Battery className="w-3.5 h-3.5 text-[#0FB36B]" />
-                          {p.storage}
-                        </span>
-                      )}
-                      {p.year && (
-                        <span className="inline-flex items-center gap-1.5 text-gray-500 bg-gray-100 px-2.5 py-1 rounded-md">
-                          <Calendar className="w-3.5 h-3.5" />
-                          {p.year}
-                        </span>
-                      )}
                     </div>
-                  </div>
-                </article>
-              ))}
+                  </article>
+                );
+              })}
             </div>
           )}
 
@@ -211,6 +285,17 @@ const Progetti = () => {
           </Link>
         </div>
       </section>
+
+      {gallery.open ? (
+        <Lightbox
+          images={gallery.images}
+          index={gallery.index}
+          onClose={closeGallery}
+          onPrev={prev}
+          onNext={next}
+          alt={gallery.title}
+        />
+      ) : null}
     </>
   );
 };

@@ -6,10 +6,12 @@ import {
   Calendar,
   ExternalLink,
   Newspaper,
+  Images as ImagesIcon,
 } from "lucide-react";
 import { SITE } from "../data/mock";
 import { PageHero } from "./ChiSiamo";
 import Seo from "../components/Seo";
+import Lightbox from "../components/Lightbox";
 
 const API_URL = process.env.REACT_APP_BACKEND_URL;
 
@@ -18,6 +20,12 @@ const resolveImageUrl = (url) => {
   if (url.startsWith("http://") || url.startsWith("https://")) return url;
   if (url.startsWith("/")) return `${API_URL}${url}`;
   return url;
+};
+
+const getPostImages = (post) => {
+  if (Array.isArray(post.images) && post.images.length > 0) return post.images;
+  if (post.image_url) return [post.image_url];
+  return [];
 };
 
 const formatDate = (iso) => {
@@ -33,47 +41,94 @@ const formatDate = (iso) => {
   }
 };
 
-const PostCard = ({ post }) => (
-  <article
-    data-testid="blog-post-card"
-    className="bg-white border border-gray-100 rounded-xl overflow-hidden hover:shadow-lg transition-all duration-300 flex flex-col"
-  >
-    {post.image_url ? (
-      <div className="aspect-[16/10] overflow-hidden bg-gray-100">
-        <img
-          src={resolveImageUrl(post.image_url)}
-          alt={post.title}
-          className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
-          loading="lazy"
-        />
-      </div>
-    ) : null}
-    <div className="p-6 flex-1 flex flex-col">
-      <div className="flex items-center gap-2 text-xs text-gray-500 mb-3">
-        <Calendar className="w-3.5 h-3.5 text-[#0FB36B]" />
-        <time dateTime={post.published_at}>{formatDate(post.published_at)}</time>
-      </div>
-      <h3 className="text-lg font-montserrat font-semibold text-[#0A1F44] mb-3 leading-snug">
-        {post.title}
-      </h3>
-      <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-line mb-5 flex-1">
-        {post.content}
-      </p>
-      {post.facebook_url ? (
-        <a
-          href={post.facebook_url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-1.5 text-xs text-[#1877F2] hover:underline font-semibold mt-auto"
+const PostCard = ({ post, onOpenGallery }) => {
+  const images = getPostImages(post).map(resolveImageUrl);
+  const cover = images[0];
+  const extraCount = images.length - 1;
+
+  return (
+    <article
+      data-testid="blog-post-card"
+      className="bg-white border border-gray-100 rounded-xl overflow-hidden hover:shadow-lg transition-all duration-300 flex flex-col"
+    >
+      {cover ? (
+        <button
+          type="button"
+          data-testid="blog-post-cover"
+          onClick={() => onOpenGallery(images, 0)}
+          className="relative aspect-[16/10] overflow-hidden bg-gray-100 group cursor-zoom-in"
         >
-          <Facebook className="w-3.5 h-3.5" />
-          Vedi su Facebook
-          <ExternalLink className="w-3 h-3" />
-        </a>
+          <img
+            src={cover}
+            alt={post.title}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            loading="lazy"
+          />
+          {extraCount > 0 ? (
+            <span className="absolute bottom-3 right-3 inline-flex items-center gap-1.5 bg-black/65 backdrop-blur-sm text-white text-xs font-montserrat font-semibold px-2.5 py-1 rounded-full">
+              <ImagesIcon className="w-3.5 h-3.5" />+{extraCount}
+            </span>
+          ) : null}
+        </button>
       ) : null}
-    </div>
-  </article>
-);
+      <div className="p-6 flex-1 flex flex-col">
+        <div className="flex items-center gap-2 text-xs text-gray-500 mb-3">
+          <Calendar className="w-3.5 h-3.5 text-[#0FB36B]" />
+          <time dateTime={post.published_at}>{formatDate(post.published_at)}</time>
+        </div>
+        <h3 className="text-lg font-montserrat font-semibold text-[#0A1F44] mb-3 leading-snug">
+          {post.title}
+        </h3>
+        <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-line mb-5 flex-1">
+          {post.content}
+        </p>
+
+        {images.length > 1 ? (
+          <div className="flex gap-1.5 mb-4 flex-wrap">
+            {images.slice(1, 5).map((src, i) => (
+              <button
+                key={src}
+                type="button"
+                onClick={() => onOpenGallery(images, i + 1)}
+                className="w-14 h-14 rounded-md overflow-hidden border border-gray-200 hover:border-[#F4C542] transition-colors"
+                aria-label={`Apri foto ${i + 2}`}
+              >
+                <img
+                  src={src}
+                  alt=""
+                  className="w-full h-full object-cover"
+                  loading="lazy"
+                />
+              </button>
+            ))}
+            {images.length > 5 ? (
+              <button
+                type="button"
+                onClick={() => onOpenGallery(images, 5)}
+                className="w-14 h-14 rounded-md bg-gray-100 hover:bg-gray-200 text-[#0A1F44] text-xs font-montserrat font-semibold transition-colors"
+              >
+                +{images.length - 5}
+              </button>
+            ) : null}
+          </div>
+        ) : null}
+
+        {post.facebook_url ? (
+          <a
+            href={post.facebook_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 text-xs text-[#1877F2] hover:underline font-semibold mt-auto"
+          >
+            <Facebook className="w-3.5 h-3.5" />
+            Vedi su Facebook
+            <ExternalLink className="w-3 h-3" />
+          </a>
+        ) : null}
+      </div>
+    </article>
+  );
+};
 
 const EmptyState = () => (
   <div
@@ -103,6 +158,7 @@ const EmptyState = () => (
 const News = () => {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [gallery, setGallery] = useState({ open: false, images: [], index: 0 });
 
   useEffect(() => {
     let cancelled = false;
@@ -121,6 +177,21 @@ const News = () => {
       cancelled = true;
     };
   }, []);
+
+  const openGallery = (images, index) =>
+    setGallery({ open: true, images, index });
+  const closeGallery = () =>
+    setGallery((g) => ({ ...g, open: false }));
+  const prev = () =>
+    setGallery((g) => ({
+      ...g,
+      index: (g.index - 1 + g.images.length) % g.images.length,
+    }));
+  const next = () =>
+    setGallery((g) => ({
+      ...g,
+      index: (g.index + 1) % g.images.length,
+    }));
 
   return (
     <>
@@ -157,7 +228,7 @@ const News = () => {
               className="grid md:grid-cols-2 lg:grid-cols-3 gap-6"
             >
               {posts.map((p) => (
-                <PostCard key={p.id} post={p} />
+                <PostCard key={p.id} post={p} onOpenGallery={openGallery} />
               ))}
             </div>
           )}
@@ -182,6 +253,16 @@ const News = () => {
           </Link>
         </div>
       </section>
+
+      {gallery.open ? (
+        <Lightbox
+          images={gallery.images}
+          index={gallery.index}
+          onClose={closeGallery}
+          onPrev={prev}
+          onNext={next}
+        />
+      ) : null}
     </>
   );
 };

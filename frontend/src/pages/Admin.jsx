@@ -8,6 +8,8 @@ import {
   Image as ImageIcon,
   Upload,
   X,
+  ChevronLeft,
+  ChevronRight,
   CheckCircle2,
   AlertCircle,
   Loader2,
@@ -120,70 +122,96 @@ const PostForm = ({ token, onCreated }) => {
   const [form, setForm] = useState({
     title: "",
     content: "",
-    image_url: "",
+    images: [],
     facebook_url: "",
   });
   const [saving, setSaving] = useState(false);
   const [feedback, setFeedback] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState("");
+  const [externalUrl, setExternalUrl] = useState("");
 
   const update = (k) => (e) => setForm((s) => ({ ...s, [k]: e.target.value }));
 
-  const uploadFile = async (file) => {
-    if (!file) return;
+  const uploadSingleFile = async (file) => {
     if (!file.type.startsWith("image/")) {
-      setUploadError("Seleziona un file immagine (JPG, PNG, WEBP, GIF).");
-      return;
+      throw new Error(`"${file.name}": non è un'immagine.`);
     }
     if (file.size > 8 * 1024 * 1024) {
-      setUploadError("File troppo grande. Max 8 MB.");
-      return;
+      throw new Error(`"${file.name}": file troppo grande (max 8 MB).`);
     }
+    const data = new FormData();
+    data.append("file", file);
+    const res = await fetch(`${API_URL}/api/admin/upload`, {
+      method: "POST",
+      headers: { "X-Admin-Token": token },
+      body: data,
+    });
+    if (!res.ok) {
+      let detail = "Errore upload.";
+      try {
+        const d = await res.json();
+        if (typeof d?.detail === "string") detail = d.detail;
+      } catch (_) {
+        /* keep default */
+      }
+      throw new Error(detail);
+    }
+    const result = await res.json();
+    return result.url;
+  };
 
+  const uploadFiles = async (fileList) => {
+    const files = Array.from(fileList || []);
+    if (files.length === 0) return;
     setUploadError("");
     setUploading(true);
+    const newUrls = [];
     try {
-      const data = new FormData();
-      data.append("file", file);
-      const res = await fetch(`${API_URL}/api/admin/upload`, {
-        method: "POST",
-        headers: { "X-Admin-Token": token },
-        body: data,
-      });
-      if (!res.ok) {
-        let detail = "Errore upload.";
+      for (const f of files) {
         try {
-          const d = await res.json();
-          if (typeof d?.detail === "string") detail = d.detail;
-        } catch (_) {
-          /* keep default */
+          const url = await uploadSingleFile(f);
+          newUrls.push(url);
+        } catch (err) {
+          setUploadError(err.message || "Errore upload.");
         }
-        setUploadError(detail);
-        return;
       }
-      const result = await res.json();
-      setForm((s) => ({ ...s, image_url: result.url }));
-    } catch (err) {
-      setUploadError("Errore di rete durante l'upload.");
+      if (newUrls.length > 0) {
+        setForm((s) => ({ ...s, images: [...s.images, ...newUrls] }));
+      }
     } finally {
       setUploading(false);
     }
   };
 
   const onFileChange = (e) => {
-    const file = e.target.files?.[0];
-    uploadFile(file);
-    e.target.value = "";  // permette di ricaricare lo stesso file
+    uploadFiles(e.target.files);
+    e.target.value = "";
   };
 
   const onDrop = (e) => {
     e.preventDefault();
-    const file = e.dataTransfer.files?.[0];
-    uploadFile(file);
+    uploadFiles(e.dataTransfer.files);
   };
 
-  const clearImage = () => setForm((s) => ({ ...s, image_url: "" }));
+  const removeImage = (idx) =>
+    setForm((s) => ({ ...s, images: s.images.filter((_, i) => i !== idx) }));
+
+  const moveImage = (idx, dir) =>
+    setForm((s) => {
+      const next = [...s.images];
+      const newIdx = idx + dir;
+      if (newIdx < 0 || newIdx >= next.length) return s;
+      [next[idx], next[newIdx]] = [next[newIdx], next[idx]];
+      return { ...s, images: next };
+    });
+
+  const addExternalUrl = () => {
+    const url = externalUrl.trim();
+    if (!url) return;
+    setForm((s) => ({ ...s, images: [...s.images, url] }));
+    setExternalUrl("");
+  };
 
   const submit = async (e) => {
     e.preventDefault();
@@ -196,7 +224,12 @@ const PostForm = ({ token, onCreated }) => {
           "Content-Type": "application/json",
           "X-Admin-Token": token,
         },
-        body: JSON.stringify(form),
+        body: JSON.stringify({
+          title: form.title,
+          content: form.content,
+          images: form.images,
+          facebook_url: form.facebook_url,
+        }),
       });
       if (!res.ok) {
         setFeedback({ type: "error", text: "Errore nel salvataggio." });
@@ -204,7 +237,7 @@ const PostForm = ({ token, onCreated }) => {
       }
       const data = await res.json();
       setFeedback({ type: "success", text: "Post pubblicato!" });
-      setForm({ title: "", content: "", image_url: "", facebook_url: "" });
+      setForm({ title: "", content: "", images: [], facebook_url: "" });
       onCreated?.(data);
     } catch (err) {
       setFeedback({ type: "error", text: "Errore di rete." });
@@ -256,64 +289,99 @@ const PostForm = ({ token, onCreated }) => {
       <div>
         <label className="text-xs font-semibold text-[#0A1F44] mb-1.5 uppercase tracking-wider flex items-center gap-1.5">
           <ImageIcon className="w-3.5 h-3.5" />
-          Immagine del post
+          Immagini del post {form.images.length > 0 ? `(${form.images.length})` : ""}
         </label>
 
-        {form.image_url ? (
+        {form.images.length > 0 ? (
           <div
-            data-testid="post-image-preview"
-            className="relative rounded-lg overflow-hidden border border-gray-200 bg-gray-50"
+            data-testid="post-images-grid"
+            className="grid grid-cols-3 sm:grid-cols-4 gap-2 mb-3"
           >
-            <img
-              src={resolveImageUrl(form.image_url)}
-              alt="Anteprima"
-              className="w-full max-h-64 object-cover"
-            />
-            <button
-              type="button"
-              data-testid="post-image-remove"
-              onClick={clearImage}
-              className="absolute top-2 right-2 w-8 h-8 rounded-full bg-black/60 hover:bg-black/80 text-white flex items-center justify-center transition-colors"
-              aria-label="Rimuovi immagine"
-            >
-              <X className="w-4 h-4" />
-            </button>
+            {form.images.map((src, idx) => (
+              <div
+                key={`${src}-${idx}`}
+                className="relative group rounded-lg overflow-hidden border border-gray-200 bg-gray-50 aspect-square"
+              >
+                <img
+                  src={resolveImageUrl(src)}
+                  alt=""
+                  className="w-full h-full object-cover"
+                />
+                {idx === 0 ? (
+                  <span className="absolute top-1 left-1 text-[10px] font-bold uppercase tracking-wider bg-[#F4C542] text-[#0A1F44] px-1.5 py-0.5 rounded">
+                    Copertina
+                  </span>
+                ) : null}
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/45 transition-colors flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100">
+                  <button
+                    type="button"
+                    onClick={() => moveImage(idx, -1)}
+                    disabled={idx === 0}
+                    className="w-7 h-7 rounded-full bg-white/90 hover:bg-white disabled:opacity-30 text-[#0A1F44] flex items-center justify-center"
+                    aria-label="Sposta a sinistra"
+                  >
+                    <ChevronLeft className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => moveImage(idx, 1)}
+                    disabled={idx === form.images.length - 1}
+                    className="w-7 h-7 rounded-full bg-white/90 hover:bg-white disabled:opacity-30 text-[#0A1F44] flex items-center justify-center"
+                    aria-label="Sposta a destra"
+                  >
+                    <ChevronRight className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    type="button"
+                    data-testid={`post-image-remove-${idx}`}
+                    onClick={() => removeImage(idx)}
+                    className="w-7 h-7 rounded-full bg-red-500 hover:bg-red-600 text-white flex items-center justify-center"
+                    aria-label="Rimuovi"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+            ))}
           </div>
-        ) : (
-          <label
-            data-testid="post-image-dropzone"
-            htmlFor="post-image-file"
-            onDragOver={(e) => e.preventDefault()}
-            onDrop={onDrop}
-            className="flex flex-col items-center justify-center gap-2 px-4 py-8 border-2 border-dashed border-gray-200 rounded-lg cursor-pointer hover:border-[#0FB36B] hover:bg-[#0FB36B]/5 transition-colors"
-          >
-            {uploading ? (
-              <>
-                <Loader2 className="w-6 h-6 text-[#0FB36B] animate-spin" />
-                <span className="text-sm text-gray-600">Caricamento in corso…</span>
-              </>
-            ) : (
-              <>
-                <Upload className="w-6 h-6 text-[#0FB36B]" />
-                <span className="text-sm font-semibold text-[#0A1F44]">
-                  Clicca per caricare un'immagine
-                </span>
-                <span className="text-xs text-gray-500">
-                  oppure trascinala qui · JPG/PNG/WEBP/GIF · max 8 MB
-                </span>
-              </>
-            )}
-            <input
-              id="post-image-file"
-              data-testid="post-image-file"
-              type="file"
-              accept="image/png,image/jpeg,image/webp,image/gif"
-              className="hidden"
-              onChange={onFileChange}
-              disabled={uploading}
-            />
-          </label>
-        )}
+        ) : null}
+
+        <label
+          data-testid="post-image-dropzone"
+          htmlFor="post-image-file"
+          onDragOver={(e) => e.preventDefault()}
+          onDrop={onDrop}
+          className="flex flex-col items-center justify-center gap-2 px-4 py-6 border-2 border-dashed border-gray-200 rounded-lg cursor-pointer hover:border-[#0FB36B] hover:bg-[#0FB36B]/5 transition-colors"
+        >
+          {uploading ? (
+            <>
+              <Loader2 className="w-6 h-6 text-[#0FB36B] animate-spin" />
+              <span className="text-sm text-gray-600">Caricamento in corso…</span>
+            </>
+          ) : (
+            <>
+              <Upload className="w-6 h-6 text-[#0FB36B]" />
+              <span className="text-sm font-semibold text-[#0A1F44]">
+                {form.images.length > 0
+                  ? "Aggiungi altre immagini"
+                  : "Clicca per caricare immagini"}
+              </span>
+              <span className="text-xs text-gray-500">
+                puoi selezionarne più di una · JPG/PNG/WEBP/GIF · max 8 MB ciascuna
+              </span>
+            </>
+          )}
+          <input
+            id="post-image-file"
+            data-testid="post-image-file"
+            type="file"
+            accept="image/png,image/jpeg,image/webp,image/gif"
+            multiple
+            className="hidden"
+            onChange={onFileChange}
+            disabled={uploading}
+          />
+        </label>
 
         {uploadError ? (
           <p
@@ -329,13 +397,23 @@ const PostForm = ({ token, onCreated }) => {
           <summary className="text-xs text-gray-500 cursor-pointer hover:text-[#0A1F44]">
             …oppure incolla un URL esterno
           </summary>
-          <input
-            data-testid="post-image-input"
-            value={form.image_url}
-            onChange={update("image_url")}
-            placeholder="https://…"
-            className="mt-2 w-full px-4 h-10 text-sm border border-gray-200 rounded-md focus:outline-none focus:border-[#0FB36B] focus:ring-2 focus:ring-[#0FB36B]/10 transition"
-          />
+          <div className="mt-2 flex gap-2">
+            <input
+              data-testid="post-image-input"
+              value={externalUrl}
+              onChange={(e) => setExternalUrl(e.target.value)}
+              placeholder="https://…"
+              className="flex-1 px-4 h-10 text-sm border border-gray-200 rounded-md focus:outline-none focus:border-[#0FB36B] focus:ring-2 focus:ring-[#0FB36B]/10 transition"
+            />
+            <button
+              type="button"
+              onClick={addExternalUrl}
+              disabled={!externalUrl.trim()}
+              className="h-10 px-4 bg-[#0A1F44] hover:bg-[#0d2855] disabled:opacity-40 text-white text-sm font-semibold rounded-md transition-colors"
+            >
+              Aggiungi
+            </button>
+          </div>
         </details>
       </div>
 
@@ -416,17 +494,28 @@ const PostList = ({ posts, token, onDelete }) => {
           key={p.id}
           className="bg-white border border-gray-100 rounded-xl p-4 flex items-start gap-4"
         >
-          {p.image_url ? (
-            <img
-              src={resolveImageUrl(p.image_url)}
-              alt=""
-              className="w-16 h-16 rounded-lg object-cover shrink-0"
-            />
-          ) : (
-            <div className="w-16 h-16 rounded-lg bg-gray-100 shrink-0 flex items-center justify-center">
-              <ImageIcon className="w-5 h-5 text-gray-300" />
-            </div>
-          )}
+          {(() => {
+            const cover = (Array.isArray(p.images) && p.images[0]) || p.image_url || "";
+            const count = Array.isArray(p.images) ? p.images.length : (p.image_url ? 1 : 0);
+            return cover ? (
+              <div className="relative shrink-0">
+                <img
+                  src={resolveImageUrl(cover)}
+                  alt=""
+                  className="w-16 h-16 rounded-lg object-cover"
+                />
+                {count > 1 ? (
+                  <span className="absolute -bottom-1 -right-1 bg-[#0A1F44] text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center border-2 border-white">
+                    {count}
+                  </span>
+                ) : null}
+              </div>
+            ) : (
+              <div className="w-16 h-16 rounded-lg bg-gray-100 shrink-0 flex items-center justify-center">
+                <ImageIcon className="w-5 h-5 text-gray-300" />
+              </div>
+            );
+          })()}
           <div className="flex-1 min-w-0">
             <p className="font-montserrat font-semibold text-[#0A1F44] text-sm truncate">
               {p.title}
