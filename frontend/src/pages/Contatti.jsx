@@ -8,51 +8,89 @@ import {
   Clock,
   Send,
   MessageCircle,
+  AlertCircle,
+  Loader2,
 } from "lucide-react";
 import { SITE } from "../data/mock";
 import { PageHero } from "./ChiSiamo";
 import Seo from "../components/Seo";
+
+const API_URL = process.env.REACT_APP_BACKEND_URL;
 
 const Contatti = () => {
   const [form, setForm] = useState({
     name: "",
     email: "",
     phone: "",
-    plan: "Premium",
+    plan: "Premium 7 kW",
     message: "",
     privacy: false,
   });
-  const [sent, setSent] = useState(false);
+  const [status, setStatus] = useState({ state: "idle", message: "" });
 
   const onChange = (e) => {
     const { name, value, type, checked } = e.target;
     setForm((s) => ({ ...s, [name]: type === "checkbox" ? checked : value }));
   };
 
-  const onSubmit = (e) => {
+  const onSubmit = async (e) => {
     e.preventDefault();
     if (!form.privacy) return;
-    // Frontend mock submission - persist to localStorage
-    const all = JSON.parse(
-      localStorage.getItem("energeide_leads") || "[]"
-    );
-    all.push({ ...form, ts: new Date().toISOString() });
-    localStorage.setItem("energeide_leads", JSON.stringify(all));
-    setSent(true);
-    setForm({
-      name: "",
-      email: "",
-      phone: "",
-      plan: "Premium",
-      message: "",
-      privacy: false,
-    });
-    setTimeout(() => setSent(false), 5000);
+    setStatus({ state: "loading", message: "" });
+
+    try {
+      const res = await fetch(`${API_URL}/api/contact`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: form.name,
+          email: form.email,
+          phone: form.phone,
+          plan: form.plan,
+          message: form.message,
+        }),
+      });
+
+      if (!res.ok) {
+        let detail = "Errore nell'invio. Riprova tra qualche minuto.";
+        try {
+          const data = await res.json();
+          if (typeof data?.detail === "string") detail = data.detail;
+        } catch (_) {
+          /* keep default */
+        }
+        setStatus({ state: "error", message: detail });
+        return;
+      }
+
+      setStatus({
+        state: "success",
+        message: "Richiesta inviata! Ti ricontatteremo entro 24 ore.",
+      });
+      setForm({
+        name: "",
+        email: "",
+        phone: "",
+        plan: "Premium 7 kW",
+        message: "",
+        privacy: false,
+      });
+      setTimeout(
+        () => setStatus({ state: "idle", message: "" }),
+        7000
+      );
+    } catch (err) {
+      setStatus({
+        state: "error",
+        message: "Errore di rete. Controlla la connessione e riprova.",
+      });
+    }
   };
 
   const wa = `https://wa.me/${SITE.phoneRaw}?text=${encodeURIComponent(
     SITE.whatsappText
   )}`;
+  const submitting = status.state === "loading";
 
   return (
     <>
@@ -158,7 +196,7 @@ const Contatti = () => {
               <p className="text-sm text-gray-500 mb-6">
                 Tutti i campi con * sono obbligatori
               </p>
-              <form onSubmit={onSubmit} className="space-y-4">
+              <form data-testid="contact-form" onSubmit={onSubmit} className="space-y-4">
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-semibold text-[#0A1F44] mb-1.5">
@@ -252,16 +290,39 @@ const Contatti = () => {
                   </span>
                 </label>
                 <button
+                  data-testid="contact-submit"
                   type="submit"
-                  className="group inline-flex items-center justify-center gap-2 w-full sm:w-auto bg-[#F4C542] hover:bg-[#e6b838] text-[#0A1F44] rounded-md h-11 px-7 font-montserrat font-bold text-sm shadow-md shadow-[#F4C542]/20 transition-colors"
+                  disabled={submitting}
+                  className="group inline-flex items-center justify-center gap-2 w-full sm:w-auto bg-[#F4C542] hover:bg-[#e6b838] disabled:opacity-60 disabled:cursor-not-allowed text-[#0A1F44] rounded-md h-11 px-7 font-montserrat font-bold text-sm shadow-md shadow-[#F4C542]/20 transition-colors"
                 >
-                  Invia Richiesta
-                  <Send className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+                  {submitting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Invio in corso…
+                    </>
+                  ) : (
+                    <>
+                      Invia Richiesta
+                      <Send className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+                    </>
+                  )}
                 </button>
-                {sent && (
-                  <p className="text-sm text-[#0FB36B] flex items-center gap-2">
+                {status.state === "success" && (
+                  <p
+                    data-testid="contact-success"
+                    className="text-sm text-[#0FB36B] flex items-center gap-2"
+                  >
                     <Check className="w-4 h-4" />
-                    Richiesta inviata! Ti ricontatteremo entro 24 ore.
+                    {status.message}
+                  </p>
+                )}
+                {status.state === "error" && (
+                  <p
+                    data-testid="contact-error"
+                    className="text-sm text-red-600 flex items-center gap-2"
+                  >
+                    <AlertCircle className="w-4 h-4" />
+                    {status.message}
                   </p>
                 )}
               </form>

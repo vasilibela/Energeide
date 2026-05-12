@@ -22,14 +22,22 @@ Sito vetrina italiano per Energeide S.r.l. (consulenti fotovoltaico, pompe di ca
 - `POST /api/posts` → crea post (header `X-Admin-Token`)
 - `DELETE /api/posts/{id}` → elimina (header `X-Admin-Token`)
 - `POST /api/admin/login` → verifica token
+- `POST /api/contact` → invia lead via Resend a `CONTACT_RECIPIENT_EMAIL` e salva su Mongo (`contact_leads`)
 
 ## Configurazione (.env backend)
 - `MONGO_URL`, `DB_NAME` (protetti)
 - `PROJECTS_SHEET_ID`, `PROJECTS_SHEET_GID`
 - `ADMIN_TOKEN` → vedere `/app/memory/test_credentials.md`
+- `RESEND_API_KEY`, `SENDER_EMAIL` (default `onboarding@resend.dev`), `CONTACT_RECIPIENT_EMAIL` (default `info@energeide.it`)
 
 ## Changelog
-- **Feb 2026 — Sessione corrente**
+- **Feb 2026 — Sessione corrente (parte 2)**
+  - Form contatti collegato a **Resend.com**: nuovo endpoint `POST /api/contact` invia email HTML al destinatario con i dati del lead + reply-to del visitatore; salva copia su Mongo collection `contact_leads`
+  - `/app/frontend/src/pages/Contatti.jsx` riscritto: chiamata fetch reale al backend, stati loading/success/error con `data-testid` per testing, validazione email lato server (Pydantic `EmailStr`)
+  - Aggiunte env: `RESEND_API_KEY`, `SENDER_EMAIL`, `CONTACT_RECIPIENT_EMAIL`
+  - Aggiunta dipendenza `resend>=2.0.0` in `requirements.txt`
+
+- **Feb 2026 — Sessione corrente (parte 1)**
   - Logo header reso PNG trasparente (sfondo bianco rimosso via PIL, edges anti-aliased)
   - Header altezza portata a `h-[88px]` e Logo ridimensionato a `h-10 sm:h-12 md:h-14` → niente più overlap sulla hero
   - Rimosso indirizzo `Corso Vittorio Emanuele, 21 – Quadrelle (AV)` da `mock.js`

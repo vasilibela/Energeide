@@ -7,10 +7,13 @@ import csv
 import io
 import re
 import time
+import html
+import asyncio
 import httpx
+import resend
 import logging
 from pathlib import Path
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, EmailStr, Field, ConfigDict
 from typing import List
 import uuid
 from datetime import datetime, timezone
@@ -23,6 +26,13 @@ load_dotenv(ROOT_DIR / '.env')
 mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
+
+# Resend (email)
+resend.api_key = os.environ.get("RESEND_API_KEY", "")
+SENDER_EMAIL = os.environ.get("SENDER_EMAIL", "onboarding@resend.dev")
+CONTACT_RECIPIENT_EMAIL = os.environ.get(
+    "CONTACT_RECIPIENT_EMAIL", "info@energeide.it"
+)
 
 # Google Sheets - Progetti
 PROJECTS_SHEET_ID = os.environ.get(
@@ -308,6 +318,111 @@ async def delete_post(
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Post non trovato")
     return {"ok": True}
+
+
+# -------------------------------------------------------------------
+# CONTATTI - invio email tramite Resend
+# -------------------------------------------------------------------
+class ContactRequest(BaseModel):
+    name: str = Field(..., min_length=1, max_length=200)
+    email: EmailStr
+    phone: str = Field(..., min_length=3, max_length=40)
+    plan: str = Field(default="", max_length=120)
+    message: str = Field(default="", max_length=4000)
+
+
+def _build_contact_email_html(payload: ContactRequest) -> str:
+    """Costruisce il body HTML inline-styled (no esterni) per il lead."""
+    safe_msg = html.escape(payload.message or "—").replace("\n", "<br>")
+    rows = [
+        ("Nome", html.escape(payload.name)),
+        ("Email", html.escape(payload.email)),
+        ("Telefono", html.escape(payload.phone)),
+        ("Soluzione di interesse", html.escape(payload.plan or "—")),
+    ]
+    rows_html = "".join(
+        f"""
+        <tr>
+          <td style="padding:10px 14px;background:#F8FAFC;border:1px solid #E5E7EB;font-family:Arial,sans-serif;font-size:13px;color:#475569;width:200px;font-weight:600;">{label}</td>
+          <td style="padding:10px 14px;border:1px solid #E5E7EB;font-family:Arial,sans-serif;font-size:14px;color:#0A1F44;">{value}</td>
+        </tr>
+        """
+        for label, value in rows
+    )
+
+    return f"""
+    <table width="100%" cellpadding="0" cellspacing="0" style="background:#F1F5F9;padding:24px;">
+      <tr><td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;border:1px solid #E5E7EB;">
+          <tr>
+            <td style="background:#0A1F44;padding:24px;font-family:Arial,sans-serif;color:#ffffff;">
+              <p style="margin:0;font-size:11px;letter-spacing:2px;color:#F4C542;font-weight:700;">ENERGEIDE — NUOVO LEAD</p>
+              <h1 style="margin:6px 0 0;font-size:22px;line-height:1.2;">Nuova richiesta di preventivo</h1>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:24px;">
+              <table width="100%" cellpadding="0" cellspacing="0">
+                {rows_html}
+              </table>
+              <p style="margin:20px 0 8px;font-family:Arial,sans-serif;font-size:13px;color:#475569;font-weight:600;">Messaggio</p>
+              <div style="padding:14px;background:#F8FAFC;border:1px solid #E5E7EB;border-radius:8px;font-family:Arial,sans-serif;font-size:14px;color:#0A1F44;line-height:1.5;">{safe_msg}</div>
+            </td>
+          </tr>
+          <tr>
+            <td style="background:#F8FAFC;padding:16px 24px;font-family:Arial,sans-serif;font-size:11px;color:#94A3B8;border-top:1px solid #E5E7EB;">
+              Inviato automaticamente dal form di energeide.it
+            </td>
+          </tr>
+        </table>
+      </td></tr>
+    </table>
+    """
+
+
+@api_router.post("/contact")
+async def submit_contact(payload: ContactRequest):
+    """Invia il lead via Resend a info@energeide.it e salva una copia su Mongo."""
+    if not resend.api_key:
+        raise HTTPException(
+            status_code=503,
+            detail="Servizio email non configurato.",
+        )
+
+    subject = f"Nuova richiesta preventivo — {payload.name}"
+    html_body = _build_contact_email_html(payload)
+
+    params = {
+        "from": f"Energeide Web <{SENDER_EMAIL}>",
+        "to": [CONTACT_RECIPIENT_EMAIL],
+        "reply_to": payload.email,
+        "subject": subject,
+        "html": html_body,
+    }
+
+    try:
+        result = await asyncio.to_thread(resend.Emails.send, params)
+    except Exception as exc:  # pragma: no cover - dipende da rete
+        logger.exception("Errore Resend: %s", exc)
+        raise HTTPException(
+            status_code=502,
+            detail="Impossibile inviare l'email. Riprova tra qualche minuto.",
+        ) from exc
+
+    # Persistenza opzionale del lead (non bloccante: se fallisce, l'email è già partita)
+    try:
+        lead_doc = payload.model_dump()
+        lead_doc["id"] = str(uuid.uuid4())
+        lead_doc["created_at"] = datetime.now(timezone.utc).isoformat()
+        lead_doc["email_id"] = result.get("id") if isinstance(result, dict) else None
+        await db.contact_leads.insert_one(lead_doc)
+    except Exception as exc:  # pragma: no cover
+        logger.warning("Impossibile salvare il lead su Mongo: %s", exc)
+
+    return {
+        "ok": True,
+        "email_id": result.get("id") if isinstance(result, dict) else None,
+    }
 
 
 # Include the router in the main app
