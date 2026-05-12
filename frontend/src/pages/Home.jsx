@@ -372,13 +372,27 @@ const TestimonialsSection = () => (
           href="https://it.trustpilot.com/review/energeide.it"
           target="_blank"
           rel="noopener noreferrer"
-          className="group inline-flex items-center justify-center gap-2 bg-[#00B67A] hover:bg-[#009E69] text-white rounded-md px-6 h-11 font-montserrat font-bold text-sm transition-colors shadow-md hover:shadow-lg"
+          className="group inline-flex items-center justify-center gap-3 bg-[#00B67A] hover:bg-[#009E69] text-white rounded-md px-6 h-12 font-montserrat font-bold text-sm transition-colors shadow-md hover:shadow-lg"
         >
-          <Star className="w-4 h-4 fill-white" />
+          {/* Trustpilot star + wordmark */}
+          <span className="inline-flex items-center gap-1.5 pr-3 mr-1 border-r border-white/30">
+            <svg
+              className="w-5 h-5"
+              viewBox="0 0 24 24"
+              fill="white"
+              xmlns="http://www.w3.org/2000/svg"
+              aria-hidden="true"
+            >
+              <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
+            </svg>
+            <span className="font-bold tracking-tight text-[15px]">
+              Trustpilot
+            </span>
+          </span>
           Scrivi una recensione su di noi
           <ExternalLink className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
         </a>
-        <p className="text-xs text-gray-400 mt-2">Su Trustpilot</p>
+        <p className="text-xs text-gray-400 mt-2">La tua opinione conta!</p>
       </div>
     </div>
   </section>

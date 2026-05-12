@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { Phone, Mail, Facebook, Instagram, Clock } from "lucide-react";
+import { Phone, Mail, Facebook, Instagram, Clock, Star } from "lucide-react";
 import { SITE } from "../data/mock";
 
 const Footer = () => {
@@ -33,11 +33,23 @@ const Footer = () => {
                 <Facebook className="w-4 h-4" />
               </a>
               <a
-                href="#"
+                href={SITE.instagramUrl}
+                target="_blank"
+                rel="noopener noreferrer"
                 aria-label="Instagram"
                 className="w-9 h-9 rounded-full bg-white/5 hover:bg-[#F4C542] hover:text-[#0A1F44] flex items-center justify-center transition-colors"
               >
                 <Instagram className="w-4 h-4" />
+              </a>
+              <a
+                href={SITE.trustpilotUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Trustpilot"
+                title="Recensioni Trustpilot"
+                className="w-9 h-9 rounded-full bg-white/5 hover:bg-[#00B67A] hover:text-white flex items-center justify-center transition-colors"
+              >
+                <Star className="w-4 h-4 fill-current" />
               </a>
             </div>
           </div>
@@ -51,7 +63,7 @@ const Footer = () => {
                 { label: "Chi Siamo", to: "/chi-siamo" },
                 { label: "Servizi", to: "/servizi" },
                 { label: "Progetti", to: "/progetti" },
-                { label: "News", to: "/news" },
+                { label: "Blog", to: "/news" },
                 { label: "FAQ", to: "/faq" },
                 { label: "Contatti", to: "/contatti" },
               ].map((l) => (

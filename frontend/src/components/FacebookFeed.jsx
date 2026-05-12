@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Facebook, ExternalLink, AlertCircle } from "lucide-react";
+import { Facebook, ExternalLink } from "lucide-react";
 import { SITE } from "../data/mock";
 
 /**
@@ -86,15 +86,6 @@ const FacebookFeed = ({ height = 720, width = 500, showHeader = true }) => {
           loading="lazy"
           onLoad={() => setLoaded(true)}
         />
-      </div>
-
-      <div className="mt-3 flex items-start gap-2 text-[11px] text-gray-400 leading-relaxed">
-        <AlertCircle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
-        <span>
-          Il feed si aggiorna automaticamente con i nuovi post pubblicati sulla
-          Pagina Facebook ufficiale. È richiesta una Pagina pubblica (non un
-          profilo personale).
-        </span>
       </div>
     </div>
   );

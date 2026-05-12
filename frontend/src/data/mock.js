@@ -13,8 +13,11 @@ export const SITE = {
   hoursWeekdays: "Lun \u2013 Ven: 9:00 \u2013 18:00",
   hoursSaturday: "Sab: 9:00 \u2013 13:00",
   whatsappText: "Ciao! Vorrei ricevere informazioni sulle vostre soluzioni fotovoltaiche.",
-  // Facebook Page URL - usato per il Page Plugin embed
+  // Social
   facebookUrl: "https://www.facebook.com/profile.php?id=61575384451177",
+  instagramUrl:
+    "https://www.instagram.com/energeide_srl?igsh=azA2ZGg3b3FqYzU1&utm_source=qr",
+  trustpilotUrl: "https://it.trustpilot.com/review/energeide.it",
 };
 
 export const NAV = [
@@ -22,7 +25,7 @@ export const NAV = [
   { label: "Chi Siamo", to: "/chi-siamo" },
   { label: "Servizi", to: "/servizi" },
   { label: "Progetti", to: "/progetti" },
-  { label: "News", to: "/news" },
+  { label: "Blog", to: "/news" },
   { label: "FAQ", to: "/faq" },
   { label: "Contatti", to: "/contatti" },
 ];
