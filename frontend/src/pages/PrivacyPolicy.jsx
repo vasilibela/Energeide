@@ -74,10 +74,10 @@ const SECTIONS = [
         dati, opporsi al trattamento, richiedere la limitazione e la
         portabilità dei dati. Per esercitare questi diritti:{" "}
         <a
-          href="mailto:privacy@energeide.it"
+          href="mailto:info@energeide.it"
           className="text-[#0FB36B] font-semibold hover:underline"
         >
-          privacy@energeide.it
+          info@energeide.it
         </a>
       </p>
     ),

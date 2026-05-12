@@ -139,12 +139,12 @@ const Footer = () => {
           </div>
         </div>
 
-        <div className="mt-12 pt-6 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-gray-400">
+        <div className="mt-12 pt-6 border-t border-white/10 flex flex-col items-center gap-3 text-xs text-gray-400 text-center">
           <p>
             © {new Date().getFullYear()} ENERGEIDE S.r.l. Tutti i diritti
             riservati. {SITE.vat}
           </p>
-          <div className="flex gap-5">
+          <div className="flex flex-wrap justify-center gap-5">
             <Link to="/privacy-policy" className="hover:text-[#F4C542]">
               Privacy Policy
             </Link>
