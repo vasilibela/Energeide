@@ -13,6 +13,13 @@ import Seo from "../components/Seo";
 
 const API_URL = process.env.REACT_APP_BACKEND_URL;
 
+const resolveImageUrl = (url) => {
+  if (!url) return "";
+  if (url.startsWith("http://") || url.startsWith("https://")) return url;
+  if (url.startsWith("/")) return `${API_URL}${url}`;
+  return url;
+};
+
 const formatDate = (iso) => {
   try {
     const d = new Date(iso);
@@ -34,7 +41,7 @@ const PostCard = ({ post }) => (
     {post.image_url ? (
       <div className="aspect-[16/10] overflow-hidden bg-gray-100">
         <img
-          src={post.image_url}
+          src={resolveImageUrl(post.image_url)}
           alt={post.title}
           className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
           loading="lazy"

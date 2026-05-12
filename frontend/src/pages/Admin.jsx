@@ -6,13 +6,23 @@ import {
   Facebook,
   Calendar,
   Image as ImageIcon,
+  Upload,
+  X,
   CheckCircle2,
   AlertCircle,
+  Loader2,
 } from "lucide-react";
 import Seo from "../components/Seo";
 
 const API_URL = process.env.REACT_APP_BACKEND_URL;
 const TOKEN_STORAGE_KEY = "energeide_admin_token";
+
+const resolveImageUrl = (url) => {
+  if (!url) return "";
+  if (url.startsWith("http://") || url.startsWith("https://")) return url;
+  if (url.startsWith("/")) return `${API_URL}${url}`;
+  return url;
+};
 
 const useAdminToken = () => {
   const [token, setToken] = useState(() =>
@@ -115,8 +125,65 @@ const PostForm = ({ token, onCreated }) => {
   });
   const [saving, setSaving] = useState(false);
   const [feedback, setFeedback] = useState(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState("");
 
   const update = (k) => (e) => setForm((s) => ({ ...s, [k]: e.target.value }));
+
+  const uploadFile = async (file) => {
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      setUploadError("Seleziona un file immagine (JPG, PNG, WEBP, GIF).");
+      return;
+    }
+    if (file.size > 8 * 1024 * 1024) {
+      setUploadError("File troppo grande. Max 8 MB.");
+      return;
+    }
+
+    setUploadError("");
+    setUploading(true);
+    try {
+      const data = new FormData();
+      data.append("file", file);
+      const res = await fetch(`${API_URL}/api/admin/upload`, {
+        method: "POST",
+        headers: { "X-Admin-Token": token },
+        body: data,
+      });
+      if (!res.ok) {
+        let detail = "Errore upload.";
+        try {
+          const d = await res.json();
+          if (typeof d?.detail === "string") detail = d.detail;
+        } catch (_) {
+          /* keep default */
+        }
+        setUploadError(detail);
+        return;
+      }
+      const result = await res.json();
+      setForm((s) => ({ ...s, image_url: result.url }));
+    } catch (err) {
+      setUploadError("Errore di rete durante l'upload.");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const onFileChange = (e) => {
+    const file = e.target.files?.[0];
+    uploadFile(file);
+    e.target.value = "";  // permette di ricaricare lo stesso file
+  };
+
+  const onDrop = (e) => {
+    e.preventDefault();
+    const file = e.dataTransfer.files?.[0];
+    uploadFile(file);
+  };
+
+  const clearImage = () => setForm((s) => ({ ...s, image_url: "" }));
 
   const submit = async (e) => {
     e.preventDefault();
@@ -186,33 +253,104 @@ const PostForm = ({ token, onCreated }) => {
         />
       </div>
 
-      <div className="grid sm:grid-cols-2 gap-4">
-        <div>
-          <label className="text-xs font-semibold text-[#0A1F44] mb-1.5 uppercase tracking-wider flex items-center gap-1.5">
-            <ImageIcon className="w-3.5 h-3.5" />
-            URL Immagine
+      <div>
+        <label className="text-xs font-semibold text-[#0A1F44] mb-1.5 uppercase tracking-wider flex items-center gap-1.5">
+          <ImageIcon className="w-3.5 h-3.5" />
+          Immagine del post
+        </label>
+
+        {form.image_url ? (
+          <div
+            data-testid="post-image-preview"
+            className="relative rounded-lg overflow-hidden border border-gray-200 bg-gray-50"
+          >
+            <img
+              src={resolveImageUrl(form.image_url)}
+              alt="Anteprima"
+              className="w-full max-h-64 object-cover"
+            />
+            <button
+              type="button"
+              data-testid="post-image-remove"
+              onClick={clearImage}
+              className="absolute top-2 right-2 w-8 h-8 rounded-full bg-black/60 hover:bg-black/80 text-white flex items-center justify-center transition-colors"
+              aria-label="Rimuovi immagine"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        ) : (
+          <label
+            data-testid="post-image-dropzone"
+            htmlFor="post-image-file"
+            onDragOver={(e) => e.preventDefault()}
+            onDrop={onDrop}
+            className="flex flex-col items-center justify-center gap-2 px-4 py-8 border-2 border-dashed border-gray-200 rounded-lg cursor-pointer hover:border-[#0FB36B] hover:bg-[#0FB36B]/5 transition-colors"
+          >
+            {uploading ? (
+              <>
+                <Loader2 className="w-6 h-6 text-[#0FB36B] animate-spin" />
+                <span className="text-sm text-gray-600">Caricamento in corso…</span>
+              </>
+            ) : (
+              <>
+                <Upload className="w-6 h-6 text-[#0FB36B]" />
+                <span className="text-sm font-semibold text-[#0A1F44]">
+                  Clicca per caricare un'immagine
+                </span>
+                <span className="text-xs text-gray-500">
+                  oppure trascinala qui · JPG/PNG/WEBP/GIF · max 8 MB
+                </span>
+              </>
+            )}
+            <input
+              id="post-image-file"
+              data-testid="post-image-file"
+              type="file"
+              accept="image/png,image/jpeg,image/webp,image/gif"
+              className="hidden"
+              onChange={onFileChange}
+              disabled={uploading}
+            />
           </label>
+        )}
+
+        {uploadError ? (
+          <p
+            data-testid="post-image-error"
+            className="mt-2 text-xs text-red-600 flex items-center gap-1.5"
+          >
+            <AlertCircle className="w-3.5 h-3.5" />
+            {uploadError}
+          </p>
+        ) : null}
+
+        <details className="mt-2">
+          <summary className="text-xs text-gray-500 cursor-pointer hover:text-[#0A1F44]">
+            …oppure incolla un URL esterno
+          </summary>
           <input
             data-testid="post-image-input"
             value={form.image_url}
             onChange={update("image_url")}
             placeholder="https://…"
-            className="w-full px-4 h-11 border border-gray-200 rounded-md focus:outline-none focus:border-[#0FB36B] focus:ring-2 focus:ring-[#0FB36B]/10 transition"
+            className="mt-2 w-full px-4 h-10 text-sm border border-gray-200 rounded-md focus:outline-none focus:border-[#0FB36B] focus:ring-2 focus:ring-[#0FB36B]/10 transition"
           />
-        </div>
-        <div>
-          <label className="text-xs font-semibold text-[#0A1F44] mb-1.5 uppercase tracking-wider flex items-center gap-1.5">
-            <Facebook className="w-3.5 h-3.5" />
-            URL Post Facebook
-          </label>
-          <input
-            data-testid="post-facebook-input"
-            value={form.facebook_url}
-            onChange={update("facebook_url")}
-            placeholder="https://facebook.com/…"
-            className="w-full px-4 h-11 border border-gray-200 rounded-md focus:outline-none focus:border-[#0FB36B] focus:ring-2 focus:ring-[#0FB36B]/10 transition"
-          />
-        </div>
+        </details>
+      </div>
+
+      <div>
+        <label className="text-xs font-semibold text-[#0A1F44] mb-1.5 uppercase tracking-wider flex items-center gap-1.5">
+          <Facebook className="w-3.5 h-3.5" />
+          URL Post Facebook (opzionale)
+        </label>
+        <input
+          data-testid="post-facebook-input"
+          value={form.facebook_url}
+          onChange={update("facebook_url")}
+          placeholder="https://facebook.com/…"
+          className="w-full px-4 h-11 border border-gray-200 rounded-md focus:outline-none focus:border-[#0FB36B] focus:ring-2 focus:ring-[#0FB36B]/10 transition"
+        />
       </div>
 
       {feedback ? (
@@ -280,7 +418,7 @@ const PostList = ({ posts, token, onDelete }) => {
         >
           {p.image_url ? (
             <img
-              src={p.image_url}
+              src={resolveImageUrl(p.image_url)}
               alt=""
               className="w-16 h-16 rounded-lg object-cover shrink-0"
             />

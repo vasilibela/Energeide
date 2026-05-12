@@ -1,4 +1,5 @@
-from fastapi import FastAPI, APIRouter, HTTPException, Header
+from fastapi import FastAPI, APIRouter, HTTPException, Header, UploadFile, File
+from fastapi.staticfiles import StaticFiles
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -41,6 +42,17 @@ PROJECTS_SHEET_ID = os.environ.get(
 PROJECTS_SHEET_GID = os.environ.get("PROJECTS_SHEET_GID", "0")
 PROJECTS_CACHE_TTL = 300  # seconds (5 min)
 _projects_cache = {"data": None, "ts": 0.0}
+
+# Upload directory (persistente) per immagini caricate dal pannello admin
+UPLOADS_DIR = ROOT_DIR / "uploads"
+UPLOADS_DIR.mkdir(exist_ok=True)
+ALLOWED_IMAGE_TYPES = {
+    "image/jpeg": ".jpg",
+    "image/png": ".png",
+    "image/webp": ".webp",
+    "image/gif": ".gif",
+}
+MAX_UPLOAD_BYTES = 8 * 1024 * 1024  # 8 MB
 
 # Create the main app without a prefix
 app = FastAPI()
@@ -278,6 +290,9 @@ async def list_posts(limit: int = 50):
                 p["published_at"] = datetime.fromisoformat(p["published_at"])
             except ValueError:
                 p["published_at"] = datetime.now(timezone.utc)
+        # Normalizza i link di Google Drive in URL renderizzabili
+        if p.get("image_url"):
+            p["image_url"] = _normalize_image_url(p["image_url"])
     return posts
 
 
@@ -425,8 +440,54 @@ async def submit_contact(payload: ContactRequest):
     }
 
 
+@api_router.post("/admin/upload")
+async def upload_image(
+    file: UploadFile = File(...),
+    x_admin_token: str | None = Header(default=None, alias="X-Admin-Token"),
+):
+    """Carica un'immagine sul server. Solo admin. Ritorna l'URL pubblico."""
+    _require_admin(x_admin_token)
+
+    content_type = (file.content_type or "").lower()
+    if content_type not in ALLOWED_IMAGE_TYPES:
+        raise HTTPException(
+            status_code=400,
+            detail="Formato non supportato. Usa JPG, PNG, WEBP o GIF.",
+        )
+
+    # Leggi il file con limite di sicurezza
+    data = await file.read()
+    if len(data) > MAX_UPLOAD_BYTES:
+        raise HTTPException(
+            status_code=413,
+            detail=f"File troppo grande. Max {MAX_UPLOAD_BYTES // (1024 * 1024)} MB.",
+        )
+    if not data:
+        raise HTTPException(status_code=400, detail="File vuoto.")
+
+    ext = ALLOWED_IMAGE_TYPES[content_type]
+    fname = f"{uuid.uuid4().hex}{ext}"
+    dest = UPLOADS_DIR / fname
+    try:
+        dest.write_bytes(data)
+    except OSError as exc:  # pragma: no cover
+        logger.exception("Errore salvataggio upload")
+        raise HTTPException(status_code=500, detail="Errore salvataggio file.") from exc
+
+    public_url = f"/api/uploads/{fname}"
+    return {"ok": True, "url": public_url, "filename": fname, "size": len(data)}
+
+
 # Include the router in the main app
 app.include_router(api_router)
+
+# Mount static uploads sotto /api/uploads/<filename> in modo che passi
+# per l'ingress (che instrada solo /api/* al backend).
+app.mount(
+    "/api/uploads",
+    StaticFiles(directory=str(UPLOADS_DIR)),
+    name="uploads",
+)
 
 app.add_middleware(
     CORSMiddleware,
