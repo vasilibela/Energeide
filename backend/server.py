@@ -237,6 +237,129 @@ async def get_projects(refresh: bool = False):
 
 
 # -------------------------------------------------------------------
+# GEOCODING - lat/lng per i progetti (Nominatim + cache MongoDB)
+# -------------------------------------------------------------------
+_geocode_lock = asyncio.Lock()
+_geocode_last_call = {"ts": 0.0}
+
+
+async def _nominatim_geocode(query: str) -> dict | None:
+    """Geocodifica una stringa tramite Nominatim (OSM). Rispetta il rate limit
+    pubblico di 1 richiesta/sec e include lo User-Agent richiesto."""
+    async with _geocode_lock:
+        # Throttle: almeno 1.1 secondi tra le chiamate
+        elapsed = time.time() - _geocode_last_call["ts"]
+        if elapsed < 1.1:
+            await asyncio.sleep(1.1 - elapsed)
+        try:
+            async with httpx.AsyncClient(timeout=10.0) as http:
+                r = await http.get(
+                    "https://nominatim.openstreetmap.org/search",
+                    params={
+                        "q": query,
+                        "format": "json",
+                        "limit": 1,
+                        "countrycodes": "it",
+                    },
+                    headers={
+                        "User-Agent": "Energeide-Website/1.0 (info@energeide.it)",
+                        "Accept-Language": "it",
+                    },
+                )
+                _geocode_last_call["ts"] = time.time()
+                if r.status_code != 200:
+                    return None
+                data = r.json()
+                if not data:
+                    return None
+                return {
+                    "lat": float(data[0]["lat"]),
+                    "lng": float(data[0]["lon"]),
+                }
+        except (httpx.HTTPError, ValueError, KeyError) as exc:
+            logger.warning("Geocoding fallito per '%s': %s", query, exc)
+            return None
+
+
+async def _resolve_coords(location: str, region: str) -> dict | None:
+    """Restituisce {lat, lng} per una location, usando la cache su Mongo.
+    Prova prima 'location, Italia', poi solo la regione come fallback."""
+    if not location and not region:
+        return None
+
+    # Chiave cache normalizzata
+    cache_key = (location or region).strip().lower()
+    cached = await db.geocode_cache.find_one({"_id": cache_key}, {"_id": 0})
+    if cached and "lat" in cached and "lng" in cached:
+        return {"lat": cached["lat"], "lng": cached["lng"]}
+
+    # Prova geocodifica con location completa
+    candidates = []
+    if location:
+        candidates.append(f"{location}, Italia")
+    if region and region.strip() and (not location or region.lower() not in location.lower()):
+        candidates.append(f"{region}, Italia")
+
+    for q in candidates:
+        result = await _nominatim_geocode(q)
+        if result:
+            try:
+                await db.geocode_cache.update_one(
+                    {"_id": cache_key},
+                    {"$set": {**result, "query": q, "cached_at": datetime.now(timezone.utc).isoformat()}},
+                    upsert=True,
+                )
+            except Exception:  # pragma: no cover
+                pass
+            return result
+
+    # Fallback negativo: salva null per non riprovare ogni volta
+    try:
+        await db.geocode_cache.update_one(
+            {"_id": cache_key},
+            {"$set": {"lat": None, "lng": None, "query": location or region,
+                      "cached_at": datetime.now(timezone.utc).isoformat()}},
+            upsert=True,
+        )
+    except Exception:  # pragma: no cover
+        pass
+    return None
+
+
+@api_router.get("/projects/locations")
+async def get_project_locations():
+    """Ritorna soltanto le coordinate dei progetti, per la mappa.
+
+    Geocodifica usando Nominatim con cache persistente su Mongo. Ritorna
+    una lista di {title, location, region, lat, lng, power, type, year}
+    per ogni progetto che ha coordinate valide.
+    """
+    # Riusa la cache progetti se disponibile, altrimenti la popola
+    if _projects_cache["data"] is None:
+        await get_projects()
+
+    projects = _projects_cache["data"] or []
+    locations = []
+    for p in projects:
+        coords = await _resolve_coords(p.get("location", ""), p.get("region", ""))
+        if not coords or coords.get("lat") is None:
+            continue
+        locations.append({
+            "id": p.get("id"),
+            "title": p.get("title"),
+            "location": p.get("location"),
+            "region": p.get("region"),
+            "power": p.get("power"),
+            "type": p.get("type"),
+            "year": p.get("year"),
+            "lat": coords["lat"],
+            "lng": coords["lng"],
+        })
+
+    return {"count": len(locations), "data": locations}
+
+
+# -------------------------------------------------------------------
 # BLOG POSTS - CRUD con autenticazione semplice tramite admin token
 # -------------------------------------------------------------------
 ADMIN_TOKEN = os.environ.get("ADMIN_TOKEN", "")

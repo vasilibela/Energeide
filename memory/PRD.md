@@ -18,7 +18,8 @@ Sito vetrina italiano per Energeide S.r.l. (consulenti fotovoltaico, pompe di ca
 
 ## API Backend
 - `GET  /api/projects` → lista progetti da Google Sheet (cached)
-- `GET  /api/posts` → lista post blog (pubblica)
+- `GET  /api/projects/locations` → coordinate progetti per la mappa (geocoding Nominatim cached su Mongo `geocode_cache`)
+- `GET  /api/posts` → lista post blog (pubblica, drive URLs normalizzati)
 - `POST /api/posts` → crea post (header `X-Admin-Token`)
 - `DELETE /api/posts/{id}` → elimina (header `X-Admin-Token`)
 - `POST /api/admin/login` → verifica token
@@ -31,6 +32,19 @@ Sito vetrina italiano per Energeide S.r.l. (consulenti fotovoltaico, pompe di ca
 - `RESEND_API_KEY`, `SENDER_EMAIL` (default `onboarding@resend.dev`), `CONTACT_RECIPIENT_EMAIL` (default `info@energeide.it`)
 
 ## Changelog
+- **Feb 2026 — Sessione corrente (parte 3)**
+  - **Mappa Italia interattiva** su `/progetti`: componente `ProjectsMap.jsx` con react-leaflet + tile OpenStreetMap. Pin custom in colori brand (giallo F4C542 con bordo blu 0A1F44), popup con titolo/location/potenza/anno
+  - Backend `GET /api/projects/locations` con geocoding via Nominatim (rate-limited 1.1s, User-Agent corretto) e cache persistente su Mongo (collezione `geocode_cache`)
+  - Aggiunte dipendenze frontend: `react-leaflet@5`, `leaflet@1.9`
+
+- **Feb 2026 — Sessione corrente (parte 2 bis: upload immagini)**
+  - Backend `POST /api/admin/upload` (multipart, X-Admin-Token) → salva su `/app/backend/uploads/` con nome UUID, ritorna URL relativo
+  - Static mount `/api/uploads/*` per servire i file (passa per ingress)
+  - Validazione MIME (JPG/PNG/WEBP/GIF) + limite 8 MB
+  - Frontend Admin: dropzone con drag-and-drop, file picker, preview, remove button
+  - Frontend News + Admin: helper `resolveImageUrl` per gestire path relativi/assoluti
+  - Bonus: `_normalize_image_url` applicato anche ai post (Google Drive `/file/d/.../view` → `thumbnail`)
+
 - **Feb 2026 — Sessione corrente (parte 2)**
   - Form contatti collegato a **Resend.com**: nuovo endpoint `POST /api/contact` invia email HTML al destinatario con i dati del lead + reply-to del visitatore; salva copia su Mongo collection `contact_leads`
   - `/app/frontend/src/pages/Contatti.jsx` riscritto: chiamata fetch reale al backend, stati loading/success/error con `data-testid` per testing, validazione email lato server (Pydantic `EmailStr`)

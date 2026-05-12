@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { PageHero } from "./ChiSiamo";
 import Seo from "../components/Seo";
+import ProjectsMap from "../components/ProjectsMap";
 
 const FILTERS = ["Tutti", "Residenziale", "Commerciale", "Industriale"];
 
@@ -63,6 +64,8 @@ const Progetti = () => {
         title="I nostri lavori, la tua ispirazione"
         subtitle="Scopri alcuni degli impianti che abbiamo realizzato per famiglie, attività commerciali e aziende in tutta Italia."
       />
+
+      <ProjectsMap />
 
       <section className="py-12 sm:py-16 bg-white">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
