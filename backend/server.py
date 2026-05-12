@@ -1,4 +1,4 @@
-from fastapi import FastAPI, APIRouter, HTTPException
+from fastapi import FastAPI, APIRouter, HTTPException, Header
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -212,6 +212,102 @@ async def get_projects(refresh: bool = False):
     _projects_cache["data"] = projects
     _projects_cache["ts"] = now
     return {"count": len(projects), "cached": False, "data": projects}
+
+
+# -------------------------------------------------------------------
+# BLOG POSTS - CRUD con autenticazione semplice tramite admin token
+# -------------------------------------------------------------------
+ADMIN_TOKEN = os.environ.get("ADMIN_TOKEN", "")
+
+
+def _require_admin(x_admin_token: str | None) -> None:
+    """Verifica il token admin per le operazioni di scrittura sui post."""
+    if not ADMIN_TOKEN or not x_admin_token or x_admin_token != ADMIN_TOKEN:
+        raise HTTPException(status_code=401, detail="Non autorizzato")
+
+
+class BlogPost(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    title: str
+    content: str
+    image_url: str = ""
+    facebook_url: str = ""
+    published_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class BlogPostCreate(BaseModel):
+    title: str
+    content: str
+    image_url: str = ""
+    facebook_url: str = ""
+    published_at: str | None = None  # ISO 8601 opzionale
+
+
+class AdminLogin(BaseModel):
+    token: str
+
+
+@api_router.post("/admin/login")
+async def admin_login(payload: AdminLogin):
+    """Verifica le credenziali admin. Ritorna 200 se il token è corretto."""
+    if not ADMIN_TOKEN or payload.token != ADMIN_TOKEN:
+        raise HTTPException(status_code=401, detail="Token non valido")
+    return {"ok": True}
+
+
+@api_router.get("/posts", response_model=List[BlogPost])
+async def list_posts(limit: int = 50):
+    """Ritorna i post del blog ordinati dal più recente al più vecchio."""
+    cursor = db.blog_posts.find({}, {"_id": 0}).sort("published_at", -1).limit(limit)
+    posts = await cursor.to_list(length=limit)
+    for p in posts:
+        if isinstance(p.get("published_at"), str):
+            try:
+                p["published_at"] = datetime.fromisoformat(p["published_at"])
+            except ValueError:
+                p["published_at"] = datetime.now(timezone.utc)
+    return posts
+
+
+@api_router.post("/posts", response_model=BlogPost)
+async def create_post(
+    payload: BlogPostCreate,
+    x_admin_token: str | None = Header(default=None, alias="X-Admin-Token"),
+):
+    _require_admin(x_admin_token)
+
+    published_at = datetime.now(timezone.utc)
+    if payload.published_at:
+        try:
+            published_at = datetime.fromisoformat(payload.published_at)
+        except ValueError:
+            pass
+
+    post = BlogPost(
+        title=payload.title.strip(),
+        content=payload.content.strip(),
+        image_url=payload.image_url.strip(),
+        facebook_url=payload.facebook_url.strip(),
+        published_at=published_at,
+    )
+    doc = post.model_dump()
+    doc["published_at"] = doc["published_at"].isoformat()
+    await db.blog_posts.insert_one(doc)
+    return post
+
+
+@api_router.delete("/posts/{post_id}")
+async def delete_post(
+    post_id: str,
+    x_admin_token: str | None = Header(default=None, alias="X-Admin-Token"),
+):
+    _require_admin(x_admin_token)
+    result = await db.blog_posts.delete_one({"id": post_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Post non trovato")
+    return {"ok": True}
 
 
 # Include the router in the main app

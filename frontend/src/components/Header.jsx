@@ -26,9 +26,9 @@ const Header = () => {
       }`}
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-[76px]">
+        <div className="flex items-center justify-between h-[88px]">
           <Link to="/" className="flex items-center shrink-0" aria-label="Energeide - Home">
-            <Logo className="h-14 sm:h-16 md:h-20 w-auto" />
+            <Logo className="h-10 sm:h-12 md:h-14 w-auto" />
           </Link>
 
           <nav className="hidden lg:flex items-center gap-7">

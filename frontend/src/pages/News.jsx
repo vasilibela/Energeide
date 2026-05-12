@@ -1,119 +1,182 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, Facebook, Sparkles, Users, Calendar } from "lucide-react";
+import {
+  ArrowRight,
+  Facebook,
+  Calendar,
+  ExternalLink,
+  Newspaper,
+} from "lucide-react";
 import { SITE } from "../data/mock";
 import { PageHero } from "./ChiSiamo";
-import FacebookFeed from "../components/FacebookFeed";
 import Seo from "../components/Seo";
 
-const News = () => (
-  <>
-    <Seo
-      title="Blog"
-      description="Resta aggiornato sulle nostre attività: installazioni, novità dal mondo del fotovoltaico e consigli per risparmiare in bolletta."
-      path="/news"
-    />
-    <PageHero
-      eyebrow="BLOG"
-      title="Blog"
-      subtitle="Resta aggiornato sulle nostre attività"
-    />
+const API_URL = process.env.REACT_APP_BACKEND_URL;
 
-    <section className="py-16 sm:py-20 bg-white">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 grid lg:grid-cols-5 gap-10 items-start">
-        <div className="lg:col-span-2 space-y-5">
-          <div className="inline-flex items-center gap-2 bg-[#0FB36B]/10 rounded-full px-4 py-1.5">
-            <Sparkles className="w-4 h-4 text-[#0FB36B]" />
-            <span className="text-xs text-[#0FB36B] font-montserrat font-semibold tracking-wider">
-              IN TEMPO REALE
-            </span>
-          </div>
-          <h2 className="text-3xl sm:text-4xl font-montserrat font-bold text-[#0A1F44] leading-[1.1]">
-            Seguici su Facebook
-          </h2>
-          <p className="text-gray-600 leading-relaxed">
-            Ogni nuovo post pubblicato sulla nostra Pagina Facebook compare
-            automaticamente qui sul sito. Nessuna copia manuale: pubblichi una
-            volta, lo vedi ovunque.
-          </p>
-          <ul className="space-y-3">
-            {[
-              {
-                Icon: Calendar,
-                t: "Aggiornamenti quotidiani",
-                d: "Foto cantieri, novit\u00E0 normative, consigli energetici.",
-              },
-              {
-                Icon: Users,
-                t: "Una community attiva",
-                d: "Lascia un like, commenta o condividi i nostri post.",
-              },
-              {
-                Icon: Facebook,
-                t: "Direttamente da Facebook",
-                d: "Feed ufficiale, sicuro e gestito da Meta.",
-              },
-            ].map(({ Icon, t, d }) => (
-              <li
-                key={t}
-                className="flex items-start gap-3 p-4 rounded-xl border border-gray-100 bg-gray-50"
-              >
-                <span className="w-9 h-9 rounded-lg bg-[#F4C542]/15 flex items-center justify-center shrink-0">
-                  <Icon className="w-4 h-4 text-[#F4C542]" />
-                </span>
-                <div>
-                  <p className="font-montserrat font-semibold text-[#0A1F44] text-sm">
-                    {t}
-                  </p>
-                  <p className="text-sm text-gray-600 leading-relaxed">{d}</p>
-                </div>
-              </li>
-            ))}
-          </ul>
-          <div className="flex flex-wrap gap-3 pt-2">
-            <a
-              href={SITE.facebookUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center justify-center gap-2 bg-[#1877F2] hover:bg-[#1466d4] text-white rounded-md px-5 h-11 font-montserrat font-semibold text-sm transition-colors"
-            >
-              <Facebook className="w-4 h-4" />
-              Apri la nostra Pagina
-            </a>
-            <Link
-              to="/contatti"
-              className="inline-flex items-center justify-center gap-2 border border-gray-200 hover:border-[#0A1F44] text-[#0A1F44] rounded-md px-5 h-11 font-montserrat font-semibold text-sm transition-colors"
-            >
-              Richiedi Preventivo
-              <ArrowRight className="w-4 h-4" />
-            </Link>
-          </div>
-        </div>
+const formatDate = (iso) => {
+  try {
+    const d = new Date(iso);
+    return d.toLocaleDateString("it-IT", {
+      day: "2-digit",
+      month: "long",
+      year: "numeric",
+    });
+  } catch {
+    return "";
+  }
+};
 
-        <div className="lg:col-span-3 flex justify-center lg:justify-end">
-          <FacebookFeed height={820} />
-        </div>
+const PostCard = ({ post }) => (
+  <article
+    data-testid="blog-post-card"
+    className="bg-white border border-gray-100 rounded-xl overflow-hidden hover:shadow-lg transition-all duration-300 flex flex-col"
+  >
+    {post.image_url ? (
+      <div className="aspect-[16/10] overflow-hidden bg-gray-100">
+        <img
+          src={post.image_url}
+          alt={post.title}
+          className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+          loading="lazy"
+        />
       </div>
-    </section>
-
-    <section className="py-16 bg-[#0A1F44] text-white">
-      <div className="mx-auto max-w-4xl px-4 text-center">
-        <h2 className="text-3xl sm:text-4xl font-montserrat font-bold mb-4">
-          Hai una domanda dopo aver letto un post?
-        </h2>
-        <p className="text-gray-300 mb-7">
-          Scrivici, ti rispondiamo entro 24 ore con un preventivo personalizzato.
-        </p>
-        <Link
-          to="/contatti"
-          className="inline-flex items-center justify-center gap-2 bg-[#F4C542] hover:bg-[#e6b838] text-[#0A1F44] rounded-md px-6 h-11 font-montserrat font-bold text-sm transition-colors"
+    ) : null}
+    <div className="p-6 flex-1 flex flex-col">
+      <div className="flex items-center gap-2 text-xs text-gray-500 mb-3">
+        <Calendar className="w-3.5 h-3.5 text-[#0FB36B]" />
+        <time dateTime={post.published_at}>{formatDate(post.published_at)}</time>
+      </div>
+      <h3 className="text-lg font-montserrat font-semibold text-[#0A1F44] mb-3 leading-snug">
+        {post.title}
+      </h3>
+      <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-line mb-5 flex-1">
+        {post.content}
+      </p>
+      {post.facebook_url ? (
+        <a
+          href={post.facebook_url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1.5 text-xs text-[#1877F2] hover:underline font-semibold mt-auto"
         >
-          Contattaci Ora
-          <ArrowRight className="w-5 h-5" />
-        </Link>
-      </div>
-    </section>
-  </>
+          <Facebook className="w-3.5 h-3.5" />
+          Vedi su Facebook
+          <ExternalLink className="w-3 h-3" />
+        </a>
+      ) : null}
+    </div>
+  </article>
 );
+
+const EmptyState = () => (
+  <div
+    data-testid="blog-empty-state"
+    className="text-center py-16 px-6 bg-gray-50 rounded-xl border border-dashed border-gray-200"
+  >
+    <Newspaper className="w-12 h-12 mx-auto text-gray-300 mb-3" />
+    <p className="text-[#0A1F44] font-montserrat font-semibold mb-2">
+      Nessun post pubblicato al momento
+    </p>
+    <p className="text-sm text-gray-500 max-w-md mx-auto">
+      Torna a trovarci presto: stiamo preparando nuovi contenuti su
+      installazioni, novità normative e consigli per risparmiare in bolletta.
+    </p>
+    <a
+      href={SITE.facebookUrl}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="inline-flex items-center justify-center gap-2 mt-5 bg-[#1877F2] hover:bg-[#1466d4] text-white rounded-md px-5 h-10 font-montserrat font-semibold text-sm transition-colors"
+    >
+      <Facebook className="w-4 h-4" />
+      Seguici su Facebook
+    </a>
+  </div>
+);
+
+const News = () => {
+  const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch(`${API_URL}/api/posts`)
+      .then((r) => (r.ok ? r.json() : []))
+      .then((data) => {
+        if (!cancelled) setPosts(Array.isArray(data) ? data : []);
+      })
+      .catch(() => {
+        if (!cancelled) setPosts([]);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  return (
+    <>
+      <Seo
+        title="Blog"
+        description="Resta aggiornato sulle nostre attività: installazioni, novità dal mondo del fotovoltaico e consigli per risparmiare in bolletta."
+        path="/news"
+      />
+      <PageHero
+        eyebrow="BLOG"
+        title="Le ultime novità"
+        subtitle="Foto dei cantieri, consigli energetici e aggiornamenti dal mondo del fotovoltaico."
+      />
+
+      <section className="py-16 sm:py-20 bg-white">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          {loading ? (
+            <div
+              data-testid="blog-loading"
+              className="grid md:grid-cols-2 lg:grid-cols-3 gap-6"
+            >
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="bg-gray-50 rounded-xl h-80 animate-pulse"
+                />
+              ))}
+            </div>
+          ) : posts.length === 0 ? (
+            <EmptyState />
+          ) : (
+            <div
+              data-testid="blog-posts-grid"
+              className="grid md:grid-cols-2 lg:grid-cols-3 gap-6"
+            >
+              {posts.map((p) => (
+                <PostCard key={p.id} post={p} />
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
+
+      <section className="py-16 bg-[#0A1F44] text-white">
+        <div className="mx-auto max-w-4xl px-4 text-center">
+          <h2 className="text-3xl sm:text-4xl font-montserrat font-bold mb-4">
+            Hai una domanda dopo aver letto un post?
+          </h2>
+          <p className="text-gray-300 mb-7">
+            Scrivici, ti rispondiamo entro 24 ore con un preventivo
+            personalizzato.
+          </p>
+          <Link
+            to="/contatti"
+            className="inline-flex items-center justify-center gap-2 bg-[#F4C542] hover:bg-[#e6b838] text-[#0A1F44] rounded-md px-6 h-11 font-montserrat font-bold text-sm transition-colors"
+          >
+            Contattaci Ora
+            <ArrowRight className="w-5 h-5" />
+          </Link>
+        </div>
+      </section>
+    </>
+  );
+};
 
 export default News;

@@ -8,8 +8,6 @@ export const SITE = {
   phoneRaw: "393509312938",
   email: "info@energeide.it",
   vat: "P.IVA: 02987000649",
-  addressLine1: "Corso Vittorio Emanuele, 21",
-  addressLine2: "Quadrelle (AV) 83020 \u2013 Italia",
   hoursWeekdays: "Lun \u2013 Ven: 9:00 \u2013 18:00",
   hoursSaturday: "Sab: 9:00 \u2013 13:00",
   whatsappText: "Ciao! Vorrei ricevere informazioni sulle vostre soluzioni fotovoltaiche.",
