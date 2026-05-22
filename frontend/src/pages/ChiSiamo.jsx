@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { TEAM_VALUES } from "../data/mock";
 import Seo from "../components/Seo";
+import ProjectShowcaseImage from "../components/ProjectShowcaseImage";
 
 const iconMap = {
   flame: Flame,
@@ -120,10 +121,8 @@ const ChiSiamo = () => (
           </ul>
         </div>
         <div className="relative">
-          <img
-            src="https://images.unsplash.com/photo-1509391366360-2e959784a276?w=1600&q=80"
-            alt="Pannelli fotovoltaici installati su tetto residenziale"
-            referrerPolicy="no-referrer"
+          <ProjectShowcaseImage
+            alt="Una delle nostre installazioni fotovoltaiche"
             className="w-full rounded-2xl shadow-xl object-cover aspect-[4/3]"
           />
           <div className="absolute -bottom-6 -right-6 hidden sm:block bg-white p-5 rounded-xl shadow-xl border border-gray-100">
