@@ -241,9 +241,101 @@ async def get_projects(refresh: bool = False):
             detail=f"Errore parsing CSV: {exc}",
         ) from exc
 
-    _projects_cache["data"] = projects
+    # Merge con i progetti creati dal pannello admin (in MongoDB)
+    db_projects = await _fetch_db_projects()
+    # I progetti dell'admin compaiono per primi (più recenti)
+    merged = db_projects + projects
+
+    _projects_cache["data"] = merged
     _projects_cache["ts"] = now
-    return {"count": len(projects), "cached": False, "data": projects}
+    return {"count": len(merged), "cached": False, "data": merged}
+
+
+# -------------------------------------------------------------------
+# PROGETTI - CRUD su MongoDB (admin)
+# -------------------------------------------------------------------
+PROJECT_TYPES = ["Residenziale", "Commerciale", "Industriale"]
+
+
+class ProjectCreate(BaseModel):
+    title: str = Field(..., min_length=1, max_length=200)
+    location: str = Field(default="", max_length=200)
+    region: str = Field(default="", max_length=100)
+    type: str = Field(default="Residenziale", max_length=50)
+    power: str = Field(default="", max_length=50)
+    storage: str = Field(default="", max_length=50)
+    year: str = Field(default="", max_length=20)
+    description: str = Field(default="", max_length=2000)
+    images: List[str] = Field(default_factory=list)
+
+
+async def _fetch_db_projects() -> list:
+    """Restituisce i progetti aggiunti dal pannello admin, ordinati dal più recente."""
+    cursor = (
+        db.projects.find({}, {"_id": 0}).sort("created_at", -1)
+    )
+    docs = await cursor.to_list(length=200)
+    out = []
+    for d in docs:
+        # Normalizza immagini (Drive ecc.)
+        imgs = [_normalize_image_url(u) for u in (d.get("images") or []) if u]
+        out.append({
+            "id": d.get("id"),
+            "title": d.get("title", ""),
+            "location": d.get("location", ""),
+            "region": d.get("region", ""),
+            "power": d.get("power", ""),
+            "storage": d.get("storage", ""),
+            "year": d.get("year", ""),
+            "type": d.get("type", "Residenziale"),
+            "description": d.get("description", ""),
+            "image": imgs[0] if imgs else "",
+            "images": imgs,
+            "_source": "db",
+        })
+    return out
+
+
+def _invalidate_projects_cache():
+    _projects_cache["data"] = None
+    _projects_cache["ts"] = 0.0
+
+
+@api_router.post("/admin/projects")
+async def create_db_project(
+    payload: ProjectCreate,
+    x_admin_token: str | None = Header(default=None, alias="X-Admin-Token"),
+):
+    _require_admin(x_admin_token)
+    project_id = str(uuid.uuid4())
+    doc = payload.model_dump()
+    doc["id"] = project_id
+    doc["created_at"] = datetime.now(timezone.utc).isoformat()
+    await db.projects.insert_one(doc)
+    _invalidate_projects_cache()
+    return {"ok": True, "id": project_id}
+
+
+@api_router.delete("/admin/projects/{project_id}")
+async def delete_db_project(
+    project_id: str,
+    x_admin_token: str | None = Header(default=None, alias="X-Admin-Token"),
+):
+    _require_admin(x_admin_token)
+    result = await db.projects.delete_one({"id": project_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Progetto non trovato")
+    _invalidate_projects_cache()
+    return {"ok": True}
+
+
+@api_router.get("/admin/projects")
+async def list_db_projects(
+    x_admin_token: str | None = Header(default=None, alias="X-Admin-Token"),
+):
+    """Lista solo i progetti gestiti dall'admin (in MongoDB)."""
+    _require_admin(x_admin_token)
+    return {"data": await _fetch_db_projects()}
 
 
 # -------------------------------------------------------------------
