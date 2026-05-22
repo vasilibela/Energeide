@@ -24,7 +24,6 @@ import {
 } from "../data/mock";
 import Seo from "../components/Seo";
 import HeroCarousel from "../components/HeroCarousel";
-import TrustpilotCarousel from "../components/TrustpilotCarousel";
 
 const iconMap = {
   zap: Zap,
@@ -435,7 +434,6 @@ const Home = () => (
     <SuggestionSection />
     <WhySection />
     <TestimonialsSection />
-    <TrustpilotCarousel />
     <CTASection />
   </>
 );
