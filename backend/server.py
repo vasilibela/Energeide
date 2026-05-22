@@ -136,7 +136,11 @@ def _normalize_image_url(url: str) -> str:
 
 
 def _parse_projects_csv(csv_text: str) -> List[dict]:
-    """Parse the Google Sheet CSV export and normalise the rows."""
+    """Parse the Google Sheet CSV export and normalise the rows.
+
+    Ordina i progetti dal più recente al più vecchio in base al campo 'Data'
+    (formato 'Mese AAAA' in italiano, es. 'Maggio 2026').
+    """
     reader = csv.DictReader(io.StringIO(csv_text))
     projects: List[dict] = []
     for raw in reader:
@@ -187,7 +191,37 @@ def _parse_projects_csv(csv_text: str) -> List[dict]:
             "images": image_urls,
             "description": row.get("Descrizione", ""),
         })
+    # Ordina i progetti del Sheet dal più recente al più vecchio
+    projects.sort(key=lambda p: _project_sort_key(p.get("year", "")), reverse=True)
     return projects
+
+
+_ITALIAN_MONTHS = {
+    "gennaio": 1, "febbraio": 2, "marzo": 3, "aprile": 4, "maggio": 5,
+    "giugno": 6, "luglio": 7, "agosto": 8, "settembre": 9, "ottobre": 10,
+    "novembre": 11, "dicembre": 12,
+}
+
+
+def _project_sort_key(value: str) -> tuple:
+    """Estrae (anno, mese) dal campo Data del Sheet. Esempi:
+    'Maggio 2026' -> (2026, 5)
+    '2025' -> (2025, 0)
+    '' -> (0, 0)  (in fondo)
+    """
+    if not value:
+        return (0, 0)
+    text = value.strip().lower()
+    # Trova l'anno (primo numero a 4 cifre)
+    year_match = re.search(r"\b(20\d{2}|19\d{2})\b", text)
+    year = int(year_match.group(1)) if year_match else 0
+    # Trova il mese (nome italiano)
+    month = 0
+    for name, num in _ITALIAN_MONTHS.items():
+        if name in text:
+            month = num
+            break
+    return (year, month)
 
 
 @api_router.get("/projects")
