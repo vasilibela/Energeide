@@ -9,6 +9,7 @@ import {
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 import WhatsAppButton from "./components/WhatsAppButton";
+import BackToTopButton from "./components/BackToTopButton";
 import Home from "./pages/Home";
 import ChiSiamo from "./pages/ChiSiamo";
 import Servizi from "./pages/Servizi";
@@ -49,6 +50,7 @@ const Layout = () => (
     </main>
     <Footer />
     <WhatsAppButton />
+    <BackToTopButton />
   </div>
 );
 
