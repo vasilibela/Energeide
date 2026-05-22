@@ -13,6 +13,8 @@ import {
   Battery,
   CheckCircle2,
   AlertCircle,
+  Pencil,
+  X as XIcon,
 } from "lucide-react";
 import Seo from "../components/Seo";
 import ImageUploader, { resolveImageUrl } from "../components/ImageUploader";
@@ -20,6 +22,26 @@ import ImageUploader, { resolveImageUrl } from "../components/ImageUploader";
 const API_URL = process.env.REACT_APP_BACKEND_URL;
 const TOKEN_STORAGE_KEY = "energeide_admin_token";
 const PROJECT_TYPES = ["Residenziale", "Commerciale", "Industriale"];
+const MONTHS_IT = [
+  "Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno",
+  "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre",
+];
+
+const parseItalianMonthYear = (value) => {
+  if (!value) return { month: "", year: String(new Date().getFullYear()) };
+  const text = String(value).trim();
+  const yearMatch = text.match(/(20\d{2}|19\d{2})/);
+  const year = yearMatch ? yearMatch[1] : String(new Date().getFullYear());
+  const lower = text.toLowerCase();
+  const month = MONTHS_IT.find((m) => lower.includes(m.toLowerCase())) || "";
+  return { month, year };
+};
+
+const formatItalianMonthYear = (month, year) => {
+  if (month && year) return `${month} ${year}`;
+  if (year) return year;
+  return "";
+};
 
 const useAdminToken = () => {
   const [token, setToken] = useState(() =>
@@ -149,17 +171,43 @@ const Feedback = ({ feedback }) =>
   ) : null;
 
 // -------------------------------------------------------------------
-// BLOG POST FORM
+// BLOG POST FORM (create + edit)
 // -------------------------------------------------------------------
-const PostForm = ({ token, onCreated }) => {
-  const [form, setForm] = useState({
+const PostForm = ({ token, onSaved, editing, onCancelEdit }) => {
+  const isEdit = Boolean(editing);
+  const emptyForm = {
     title: "",
     content: "",
     images: [],
     facebook_url: "",
-  });
+    published_at: "",
+  };
+  const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
   const [feedback, setFeedback] = useState(null);
+
+  useEffect(() => {
+    if (editing) {
+      const pa = editing.published_at
+        ? new Date(editing.published_at).toISOString().slice(0, 10)
+        : "";
+      setForm({
+        title: editing.title || "",
+        content: editing.content || "",
+        images: Array.isArray(editing.images)
+          ? [...editing.images]
+          : editing.image_url
+          ? [editing.image_url]
+          : [],
+        facebook_url: editing.facebook_url || "",
+        published_at: pa,
+      });
+    } else {
+      setForm(emptyForm);
+    }
+    setFeedback(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editing]);
 
   const update = (k) => (e) => setForm((s) => ({ ...s, [k]: e.target.value }));
   const setImages = (images) => setForm((s) => ({ ...s, images }));
@@ -169,22 +217,39 @@ const PostForm = ({ token, onCreated }) => {
     setSaving(true);
     setFeedback(null);
     try {
-      const res = await fetch(`${API_URL}/api/posts`, {
-        method: "POST",
+      const url = isEdit
+        ? `${API_URL}/api/posts/${editing.id}`
+        : `${API_URL}/api/posts`;
+      const method = isEdit ? "PUT" : "POST";
+      const body = {
+        title: form.title,
+        content: form.content,
+        images: form.images,
+        facebook_url: form.facebook_url,
+      };
+      // published_at: solo in edit (per cambiare la data del post)
+      if (isEdit && form.published_at) {
+        body.published_at = new Date(form.published_at + "T12:00:00").toISOString();
+      }
+      const res = await fetch(url, {
+        method,
         headers: {
           "Content-Type": "application/json",
           "X-Admin-Token": token,
         },
-        body: JSON.stringify(form),
+        body: JSON.stringify(body),
       });
       if (!res.ok) {
         setFeedback({ type: "error", text: "Errore nel salvataggio." });
         return;
       }
       const data = await res.json();
-      setFeedback({ type: "success", text: "Post pubblicato!" });
-      setForm({ title: "", content: "", images: [], facebook_url: "" });
-      onCreated?.(data);
+      setFeedback({
+        type: "success",
+        text: isEdit ? "Post aggiornato!" : "Post pubblicato!",
+      });
+      if (!isEdit) setForm(emptyForm);
+      onSaved?.(data, isEdit);
     } catch (err) {
       setFeedback({ type: "error", text: "Errore di rete." });
     } finally {
@@ -198,10 +263,26 @@ const PostForm = ({ token, onCreated }) => {
       onSubmit={submit}
       className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 sm:p-8 space-y-4"
     >
-      <h2 className="text-xl font-montserrat font-bold text-[#0A1F44] flex items-center gap-2">
-        <Plus className="w-5 h-5 text-[#0FB36B]" />
-        Nuovo Post
-      </h2>
+      <div className="flex items-center justify-between">
+        <h2 className="text-xl font-montserrat font-bold text-[#0A1F44] flex items-center gap-2">
+          {isEdit ? (
+            <Pencil className="w-5 h-5 text-[#F4C542]" />
+          ) : (
+            <Plus className="w-5 h-5 text-[#0FB36B]" />
+          )}
+          {isEdit ? "Modifica Post" : "Nuovo Post"}
+        </h2>
+        {isEdit ? (
+          <button
+            type="button"
+            onClick={onCancelEdit}
+            className="text-xs text-gray-500 hover:text-[#0A1F44] inline-flex items-center gap-1"
+          >
+            <XIcon className="w-3.5 h-3.5" />
+            Annulla
+          </button>
+        ) : null}
+      </div>
 
       <div>
         <FieldLabel>Titolo *</FieldLabel>
@@ -244,6 +325,22 @@ const PostForm = ({ token, onCreated }) => {
         />
       </div>
 
+      {isEdit ? (
+        <div>
+          <FieldLabel icon={Calendar}>Data di pubblicazione</FieldLabel>
+          <input
+            data-testid="post-date-input"
+            type="date"
+            value={form.published_at}
+            onChange={update("published_at")}
+            className="w-full px-4 h-11 border border-gray-200 rounded-md focus:outline-none focus:border-[#0FB36B] focus:ring-2 focus:ring-[#0FB36B]/10 transition"
+          />
+          <p className="text-[11px] text-gray-400 mt-1">
+            Cambiando la data, il post si riordina nella lista pubblica.
+          </p>
+        </div>
+      ) : null}
+
       <Feedback feedback={feedback} />
 
       <button
@@ -252,30 +349,59 @@ const PostForm = ({ token, onCreated }) => {
         disabled={saving || !form.title || !form.content}
         className="inline-flex items-center justify-center gap-2 h-11 px-6 bg-[#F4C542] hover:bg-[#e6b838] disabled:opacity-50 text-[#0A1F44] rounded-md font-montserrat font-bold text-sm shadow-md transition-colors"
       >
-        {saving ? "Pubblicazione…" : "Pubblica Post"}
+        {saving ? "Salvataggio…" : isEdit ? "Salva Modifiche" : "Pubblica Post"}
       </button>
     </form>
   );
 };
 
 // -------------------------------------------------------------------
-// PROJECT FORM
+// PROJECT FORM (create + edit)
 // -------------------------------------------------------------------
-const ProjectForm = ({ token, onCreated }) => {
-  const empty = {
+const ProjectForm = ({ token, onSaved, editing, onCancelEdit }) => {
+  const isEdit = Boolean(editing);
+  const currentYear = String(new Date().getFullYear());
+  const buildEmpty = () => ({
     title: "",
     location: "",
     region: "",
     type: "Residenziale",
     power: "",
     storage: "",
-    year: String(new Date().getFullYear()),
+    month: MONTHS_IT[new Date().getMonth()],
+    year: currentYear,
     description: "",
     images: [],
-  };
-  const [form, setForm] = useState(empty);
+  });
+  const [form, setForm] = useState(buildEmpty());
   const [saving, setSaving] = useState(false);
   const [feedback, setFeedback] = useState(null);
+
+  useEffect(() => {
+    if (editing) {
+      const { month, year } = parseItalianMonthYear(editing.year);
+      setForm({
+        title: editing.title || "",
+        location: editing.location || "",
+        region: editing.region || "",
+        type: editing.type || "Residenziale",
+        power: editing.power || "",
+        storage: editing.storage || "",
+        month,
+        year,
+        description: editing.description || "",
+        images: Array.isArray(editing.images)
+          ? [...editing.images]
+          : editing.image
+          ? [editing.image]
+          : [],
+      });
+    } else {
+      setForm(buildEmpty());
+    }
+    setFeedback(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editing]);
 
   const update = (k) => (e) => setForm((s) => ({ ...s, [k]: e.target.value }));
   const setImages = (images) => setForm((s) => ({ ...s, images }));
@@ -285,22 +411,39 @@ const ProjectForm = ({ token, onCreated }) => {
     setSaving(true);
     setFeedback(null);
     try {
-      const res = await fetch(`${API_URL}/api/admin/projects`, {
-        method: "POST",
+      const body = {
+        title: form.title,
+        location: form.location,
+        region: form.region,
+        type: form.type,
+        power: form.power,
+        storage: form.storage,
+        year: formatItalianMonthYear(form.month, form.year),
+        description: form.description,
+        images: form.images,
+      };
+      const url = isEdit
+        ? `${API_URL}/api/admin/projects/${editing.id}`
+        : `${API_URL}/api/admin/projects`;
+      const method = isEdit ? "PUT" : "POST";
+      const res = await fetch(url, {
+        method,
         headers: {
           "Content-Type": "application/json",
           "X-Admin-Token": token,
         },
-        body: JSON.stringify(form),
+        body: JSON.stringify(body),
       });
       if (!res.ok) {
         setFeedback({ type: "error", text: "Errore nel salvataggio." });
         return;
       }
-      const data = await res.json();
-      setFeedback({ type: "success", text: "Progetto pubblicato!" });
-      setForm(empty);
-      onCreated?.({ ...form, id: data.id });
+      setFeedback({
+        type: "success",
+        text: isEdit ? "Progetto aggiornato!" : "Progetto pubblicato!",
+      });
+      if (!isEdit) setForm(buildEmpty());
+      onSaved?.(isEdit);
     } catch (err) {
       setFeedback({ type: "error", text: "Errore di rete." });
     } finally {
@@ -308,16 +451,37 @@ const ProjectForm = ({ token, onCreated }) => {
     }
   };
 
+  // Genera lista anni dal corrente fino a 10 anni indietro
+  const yearOptions = Array.from({ length: 12 }, (_, i) =>
+    String(parseInt(currentYear, 10) - i + 2)
+  );
+
   return (
     <form
       data-testid="admin-project-form"
       onSubmit={submit}
       className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 sm:p-8 space-y-4"
     >
-      <h2 className="text-xl font-montserrat font-bold text-[#0A1F44] flex items-center gap-2">
-        <Plus className="w-5 h-5 text-[#0FB36B]" />
-        Nuovo Progetto
-      </h2>
+      <div className="flex items-center justify-between">
+        <h2 className="text-xl font-montserrat font-bold text-[#0A1F44] flex items-center gap-2">
+          {isEdit ? (
+            <Pencil className="w-5 h-5 text-[#F4C542]" />
+          ) : (
+            <Plus className="w-5 h-5 text-[#0FB36B]" />
+          )}
+          {isEdit ? "Modifica Progetto" : "Nuovo Progetto"}
+        </h2>
+        {isEdit ? (
+          <button
+            type="button"
+            onClick={onCancelEdit}
+            className="text-xs text-gray-500 hover:text-[#0A1F44] inline-flex items-center gap-1"
+          >
+            <XIcon className="w-3.5 h-3.5" />
+            Annulla
+          </button>
+        ) : null}
+      </div>
 
       <div>
         <FieldLabel>Titolo *</FieldLabel>
@@ -387,13 +551,37 @@ const ProjectForm = ({ token, onCreated }) => {
       </div>
 
       <div>
-        <FieldLabel icon={Calendar}>Anno installazione</FieldLabel>
-        <TextInput
-          testid="project-year-input"
-          value={form.year}
-          onChange={update("year")}
-          placeholder="Es. 2025"
-        />
+        <FieldLabel icon={Calendar}>Data installazione</FieldLabel>
+        <div className="grid grid-cols-2 gap-2">
+          <select
+            data-testid="project-month-input"
+            value={form.month}
+            onChange={update("month")}
+            className="w-full px-4 h-11 border border-gray-200 rounded-md focus:outline-none focus:border-[#0FB36B] focus:ring-2 focus:ring-[#0FB36B]/10 transition bg-white"
+          >
+            <option value="">— Mese —</option>
+            {MONTHS_IT.map((m) => (
+              <option key={m} value={m}>
+                {m}
+              </option>
+            ))}
+          </select>
+          <select
+            data-testid="project-year-input"
+            value={form.year}
+            onChange={update("year")}
+            className="w-full px-4 h-11 border border-gray-200 rounded-md focus:outline-none focus:border-[#0FB36B] focus:ring-2 focus:ring-[#0FB36B]/10 transition bg-white"
+          >
+            {yearOptions.map((y) => (
+              <option key={y} value={y}>
+                {y}
+              </option>
+            ))}
+          </select>
+        </div>
+        <p className="text-[11px] text-gray-400 mt-1">
+          Determina l'ordine dei progetti sulla pagina (più recenti prima).
+        </p>
       </div>
 
       <div>
@@ -424,7 +612,7 @@ const ProjectForm = ({ token, onCreated }) => {
         disabled={saving || !form.title}
         className="inline-flex items-center justify-center gap-2 h-11 px-6 bg-[#F4C542] hover:bg-[#e6b838] disabled:opacity-50 text-[#0A1F44] rounded-md font-montserrat font-bold text-sm shadow-md transition-colors"
       >
-        {saving ? "Pubblicazione…" : "Pubblica Progetto"}
+        {saving ? "Salvataggio…" : isEdit ? "Salva Modifiche" : "Pubblica Progetto"}
       </button>
     </form>
   );
@@ -456,7 +644,7 @@ const ItemImage = ({ images, fallbackUrl }) => {
   );
 };
 
-const PostList = ({ posts, token, onDelete }) => {
+const PostList = ({ posts, token, onDelete, onEdit, editingId }) => {
   const [deletingId, setDeletingId] = useState(null);
 
   const remove = async (id) => {
@@ -489,7 +677,9 @@ const PostList = ({ posts, token, onDelete }) => {
       {posts.map((p) => (
         <li
           key={p.id}
-          className="bg-white border border-gray-100 rounded-xl p-4 flex items-start gap-4"
+          className={`bg-white border rounded-xl p-4 flex items-start gap-4 transition-colors ${
+            editingId === p.id ? "border-[#F4C542] ring-2 ring-[#F4C542]/20" : "border-gray-100"
+          }`}
         >
           <ItemImage images={p.images} fallbackUrl={p.image_url} />
           <div className="flex-1 min-w-0">
@@ -502,23 +692,34 @@ const PostList = ({ posts, token, onDelete }) => {
             </p>
             <p className="text-sm text-gray-600 mt-1 line-clamp-2">{p.content}</p>
           </div>
-          <button
-            data-testid={`delete-post-${p.id}`}
-            type="button"
-            onClick={() => remove(p.id)}
-            disabled={deletingId === p.id}
-            className="text-red-500 hover:text-red-700 disabled:opacity-50 p-2 transition-colors"
-            aria-label="Elimina post"
-          >
-            <Trash2 className="w-4 h-4" />
-          </button>
+          <div className="flex flex-col gap-1">
+            <button
+              data-testid={`edit-post-${p.id}`}
+              type="button"
+              onClick={() => onEdit?.(p)}
+              className="text-[#0A1F44] hover:text-[#F4C542] p-2 transition-colors"
+              aria-label="Modifica post"
+            >
+              <Pencil className="w-4 h-4" />
+            </button>
+            <button
+              data-testid={`delete-post-${p.id}`}
+              type="button"
+              onClick={() => remove(p.id)}
+              disabled={deletingId === p.id}
+              className="text-red-500 hover:text-red-700 disabled:opacity-50 p-2 transition-colors"
+              aria-label="Elimina post"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+          </div>
         </li>
       ))}
     </ul>
   );
 };
 
-const ProjectList = ({ projects, token, onDelete }) => {
+const ProjectList = ({ projects, token, onDelete, onEdit, editingId }) => {
   const [deletingId, setDeletingId] = useState(null);
 
   const remove = async (id) => {
@@ -554,7 +755,9 @@ const ProjectList = ({ projects, token, onDelete }) => {
       {projects.map((p) => (
         <li
           key={p.id}
-          className="bg-white border border-gray-100 rounded-xl p-4 flex items-start gap-4"
+          className={`bg-white border rounded-xl p-4 flex items-start gap-4 transition-colors ${
+            editingId === p.id ? "border-[#F4C542] ring-2 ring-[#F4C542]/20" : "border-gray-100"
+          }`}
         >
           <ItemImage images={p.images} fallbackUrl={p.image} />
           <div className="flex-1 min-w-0">
@@ -571,16 +774,27 @@ const ProjectList = ({ projects, token, onDelete }) => {
               </p>
             ) : null}
           </div>
-          <button
-            data-testid={`delete-project-${p.id}`}
-            type="button"
-            onClick={() => remove(p.id)}
-            disabled={deletingId === p.id}
-            className="text-red-500 hover:text-red-700 disabled:opacity-50 p-2 transition-colors"
-            aria-label="Elimina progetto"
-          >
-            <Trash2 className="w-4 h-4" />
-          </button>
+          <div className="flex flex-col gap-1">
+            <button
+              data-testid={`edit-project-${p.id}`}
+              type="button"
+              onClick={() => onEdit?.(p)}
+              className="text-[#0A1F44] hover:text-[#F4C542] p-2 transition-colors"
+              aria-label="Modifica progetto"
+            >
+              <Pencil className="w-4 h-4" />
+            </button>
+            <button
+              data-testid={`delete-project-${p.id}`}
+              type="button"
+              onClick={() => remove(p.id)}
+              disabled={deletingId === p.id}
+              className="text-red-500 hover:text-red-700 disabled:opacity-50 p-2 transition-colors"
+              aria-label="Elimina progetto"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+          </div>
         </li>
       ))}
     </ul>
@@ -634,6 +848,8 @@ const Admin = () => {
   const [projects, setProjects] = useState([]);
   const [loadingPosts, setLoadingPosts] = useState(false);
   const [loadingProjects, setLoadingProjects] = useState(false);
+  const [editingPost, setEditingPost] = useState(null);
+  const [editingProject, setEditingProject] = useState(null);
 
   const reloadPosts = () => {
     setLoadingPosts(true);
@@ -659,6 +875,12 @@ const Admin = () => {
     reloadProjects();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
+
+  // Reset edit state quando cambia tab
+  useEffect(() => {
+    setEditingPost(null);
+    setEditingProject(null);
+  }, [activeTab]);
 
   if (!token) {
     return (
@@ -701,7 +923,12 @@ const Admin = () => {
               <div className="lg:col-span-3">
                 <PostForm
                   token={token}
-                  onCreated={(p) => setPosts((s) => [p, ...s])}
+                  editing={editingPost}
+                  onCancelEdit={() => setEditingPost(null)}
+                  onSaved={(_data, isEdit) => {
+                    if (isEdit) setEditingPost(null);
+                    reloadPosts();
+                  }}
                 />
               </div>
               <div className="lg:col-span-2">
@@ -714,9 +941,15 @@ const Admin = () => {
                   <PostList
                     posts={posts}
                     token={token}
-                    onDelete={(id) =>
-                      setPosts((s) => s.filter((p) => p.id !== id))
-                    }
+                    editingId={editingPost?.id}
+                    onEdit={(p) => {
+                      setEditingPost(p);
+                      window.scrollTo({ top: 0, behavior: "smooth" });
+                    }}
+                    onDelete={(id) => {
+                      setPosts((s) => s.filter((p) => p.id !== id));
+                      if (editingPost?.id === id) setEditingPost(null);
+                    }}
                   />
                 )}
               </div>
@@ -724,7 +957,15 @@ const Admin = () => {
           ) : (
             <div className="grid lg:grid-cols-5 gap-8 items-start">
               <div className="lg:col-span-3">
-                <ProjectForm token={token} onCreated={() => reloadProjects()} />
+                <ProjectForm
+                  token={token}
+                  editing={editingProject}
+                  onCancelEdit={() => setEditingProject(null)}
+                  onSaved={(isEdit) => {
+                    if (isEdit) setEditingProject(null);
+                    reloadProjects();
+                  }}
+                />
               </div>
               <div className="lg:col-span-2">
                 <h2 className="text-sm font-montserrat font-bold text-[#0A1F44] uppercase tracking-wider mb-3">
@@ -736,9 +977,15 @@ const Admin = () => {
                   <ProjectList
                     projects={projects}
                     token={token}
-                    onDelete={(id) =>
-                      setProjects((s) => s.filter((p) => p.id !== id))
-                    }
+                    editingId={editingProject?.id}
+                    onEdit={(p) => {
+                      setEditingProject(p);
+                      window.scrollTo({ top: 0, behavior: "smooth" });
+                    }}
+                    onDelete={(id) => {
+                      setProjects((s) => s.filter((p) => p.id !== id));
+                      if (editingProject?.id === id) setEditingProject(null);
+                    }}
                   />
                 )}
               </div>

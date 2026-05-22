@@ -350,6 +350,23 @@ async def create_db_project(
     return {"ok": True, "id": project_id}
 
 
+@api_router.put("/admin/projects/{project_id}")
+async def update_db_project(
+    project_id: str,
+    payload: ProjectCreate,
+    x_admin_token: str | None = Header(default=None, alias="X-Admin-Token"),
+):
+    _require_admin(x_admin_token)
+    existing = await db.projects.find_one({"id": project_id}, {"_id": 0})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Progetto non trovato")
+    update_doc = payload.model_dump()
+    update_doc["updated_at"] = datetime.now(timezone.utc).isoformat()
+    await db.projects.update_one({"id": project_id}, {"$set": update_doc})
+    _invalidate_projects_cache()
+    return {"ok": True}
+
+
 @api_router.delete("/admin/projects/{project_id}")
 async def delete_db_project(
     project_id: str,
@@ -594,6 +611,60 @@ async def create_post(
     doc["published_at"] = doc["published_at"].isoformat()
     await db.blog_posts.insert_one(doc)
     return post
+
+
+@api_router.put("/posts/{post_id}", response_model=BlogPost)
+async def update_post(
+    post_id: str,
+    payload: BlogPostCreate,
+    x_admin_token: str | None = Header(default=None, alias="X-Admin-Token"),
+):
+    _require_admin(x_admin_token)
+
+    existing = await db.blog_posts.find_one({"id": post_id}, {"_id": 0})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Post non trovato")
+
+    # published_at: mantieni quello esistente a meno che non sia stato esplicitamente cambiato
+    published_at = None
+    if payload.published_at:
+        try:
+            published_at = datetime.fromisoformat(payload.published_at)
+        except ValueError:
+            published_at = None
+    if published_at is None:
+        existing_pa = existing.get("published_at")
+        if isinstance(existing_pa, str):
+            try:
+                published_at = datetime.fromisoformat(existing_pa)
+            except ValueError:
+                published_at = datetime.now(timezone.utc)
+        else:
+            published_at = datetime.now(timezone.utc)
+
+    images = [u.strip() for u in (payload.images or []) if u and u.strip()]
+    if not images and payload.image_url and payload.image_url.strip():
+        images = [payload.image_url.strip()]
+
+    update_doc = {
+        "title": payload.title.strip(),
+        "content": payload.content.strip(),
+        "images": images,
+        "image_url": images[0] if images else "",
+        "facebook_url": payload.facebook_url.strip(),
+        "published_at": published_at.isoformat(),
+    }
+    await db.blog_posts.update_one({"id": post_id}, {"$set": update_doc})
+
+    return BlogPost(
+        id=post_id,
+        title=update_doc["title"],
+        content=update_doc["content"],
+        images=update_doc["images"],
+        image_url=update_doc["image_url"],
+        facebook_url=update_doc["facebook_url"],
+        published_at=published_at,
+    )
 
 
 @api_router.delete("/posts/{post_id}")

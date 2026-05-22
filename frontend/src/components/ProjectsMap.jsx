@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState } from "react";
 import { MapPin as MapPinIcon, Loader2, Sun, Calendar } from "lucide-react";
 import {
   MapContainer,
@@ -6,13 +6,14 @@ import {
   Marker,
   Popup,
   ZoomControl,
+  useMap,
 } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
 const API_URL = process.env.REACT_APP_BACKEND_URL;
 
-// Centro Italia (Roma) + zoom che mostra tutta la penisola
+// Centro Italia (default iniziale prima del fit)
 const ITALY_CENTER = [42.5, 12.5];
 const ITALY_ZOOM = 6;
 
@@ -54,6 +55,24 @@ const MapLegend = ({ count }) => (
   </div>
 );
 
+/**
+ * Componente interno che chiama fitBounds quando le locations cambiano.
+ * Garantisce che TUTTI i pin siano sempre visibili e separa quelli sovrapposti.
+ */
+const FitBoundsToMarkers = ({ locations }) => {
+  const map = useMap();
+  useEffect(() => {
+    if (!locations || locations.length === 0) return;
+    if (locations.length === 1) {
+      map.setView([locations[0].lat, locations[0].lng], 11, { animate: false });
+      return;
+    }
+    const bounds = L.latLngBounds(locations.map((l) => [l.lat, l.lng]));
+    map.fitBounds(bounds, { padding: [50, 50], maxZoom: 10 });
+  }, [locations, map]);
+  return null;
+};
+
 const ProjectsMap = () => {
   const [locations, setLocations] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -75,15 +94,6 @@ const ProjectsMap = () => {
       cancelled = true;
     };
   }, []);
-
-  const center = useMemo(() => {
-    if (locations.length === 0) return ITALY_CENTER;
-    const avgLat =
-      locations.reduce((s, l) => s + l.lat, 0) / locations.length;
-    const avgLng =
-      locations.reduce((s, l) => s + l.lng, 0) / locations.length;
-    return [avgLat, avgLng];
-  }, [locations]);
 
   return (
     <section className="py-12 sm:py-16 bg-gray-50">
@@ -117,7 +127,7 @@ const ProjectsMap = () => {
           ) : null}
 
           <MapContainer
-            center={center}
+            center={ITALY_CENTER}
             zoom={ITALY_ZOOM}
             minZoom={5}
             maxZoom={16}
@@ -125,6 +135,7 @@ const ProjectsMap = () => {
             zoomControl={false}
             style={{ width: "100%", height: "100%" }}
           >
+            <FitBoundsToMarkers locations={locations} />
             <TileLayer
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
