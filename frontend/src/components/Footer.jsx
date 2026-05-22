@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { Phone, Mail, Facebook, Instagram, Clock, Star } from "lucide-react";
+import { Phone, Mail, Facebook, Instagram, Clock, Star, MapPin } from "lucide-react";
 import { SITE } from "../data/mock";
 
 const Footer = () => {
@@ -133,6 +133,14 @@ const Footer = () => {
                   {SITE.hoursWeekdays}
                   <br />
                   {SITE.hoursSaturday}
+                </span>
+              </li>
+              <li className="flex items-start gap-2 text-gray-300">
+                <MapPin className="w-4 h-4 text-[#0FB36B] mt-0.5 shrink-0" />
+                <span className="leading-snug">
+                  {SITE.addressLine1}
+                  <br />
+                  {SITE.addressLine2}
                 </span>
               </li>
             </ul>

@@ -10,6 +10,7 @@ import {
   MessageCircle,
   AlertCircle,
   Loader2,
+  MapPin,
 } from "lucide-react";
 import { SITE } from "../data/mock";
 import { PageHero } from "./ChiSiamo";
@@ -157,6 +158,21 @@ const Contatti = () => {
                       {SITE.hoursWeekdays}
                       <br />
                       {SITE.hoursSaturday}
+                    </p>
+                  </div>
+                </li>
+                <li className="flex items-start gap-4">
+                  <span className="w-10 h-10 rounded-xl bg-[#F4C542]/15 text-[#F4C542] flex items-center justify-center shrink-0">
+                    <MapPin className="w-5 h-5" />
+                  </span>
+                  <div>
+                    <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">
+                      Indirizzo
+                    </p>
+                    <p className="font-montserrat font-semibold leading-snug">
+                      {SITE.addressLine1}
+                      <br />
+                      {SITE.addressLine2}
                     </p>
                   </div>
                 </li>

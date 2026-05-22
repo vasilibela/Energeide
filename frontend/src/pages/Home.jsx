@@ -23,6 +23,7 @@ import {
   SITE,
 } from "../data/mock";
 import Seo from "../components/Seo";
+import HeroCarousel from "../components/HeroCarousel";
 
 const iconMap = {
   zap: Zap,
@@ -81,15 +82,8 @@ const HeroSection = () => (
           </div>
         </div>
         <div className="relative">
-          <div className="relative rounded-2xl overflow-hidden shadow-2xl aspect-[4/3]">
-            <img
-              src="https://images.unsplash.com/photo-1771479755134-9c1e3143c110"
-              alt="Impianto fotovoltaico residenziale"
-              className="w-full h-full object-cover"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#0A1F44]/40 to-transparent" />
-          </div>
-          <div className="absolute -bottom-4 -left-4 sm:-bottom-6 sm:-left-6 bg-white p-4 sm:p-5 rounded-xl shadow-xl">
+          <HeroCarousel />
+          <div className="absolute -bottom-4 -left-4 sm:-bottom-6 sm:-left-6 bg-white p-4 sm:p-5 rounded-xl shadow-xl pointer-events-none">
             <div className="flex items-center gap-3">
               <div className="w-11 h-11 bg-[#F4C542] rounded-xl flex items-center justify-center">
                 <Battery className="w-6 h-6 text-[#0A1F44]" />
