@@ -12,6 +12,8 @@ import html
 import asyncio
 import httpx
 import resend
+import cloudinary
+import cloudinary.uploader
 import logging
 from pathlib import Path
 from pydantic import BaseModel, EmailStr, Field, ConfigDict
@@ -34,6 +36,18 @@ SENDER_EMAIL = os.environ.get("SENDER_EMAIL", "onboarding@resend.dev")
 CONTACT_RECIPIENT_EMAIL = os.environ.get(
     "CONTACT_RECIPIENT_EMAIL", "info@energeide.it"
 )
+
+# Cloudinary (persistent image storage)
+CLOUDINARY_CLOUD_NAME = os.environ.get("CLOUDINARY_CLOUD_NAME", "")
+CLOUDINARY_API_KEY = os.environ.get("CLOUDINARY_API_KEY", "")
+CLOUDINARY_API_SECRET = os.environ.get("CLOUDINARY_API_SECRET", "")
+if CLOUDINARY_CLOUD_NAME and CLOUDINARY_API_KEY and CLOUDINARY_API_SECRET:
+    cloudinary.config(
+        cloud_name=CLOUDINARY_CLOUD_NAME,
+        api_key=CLOUDINARY_API_KEY,
+        api_secret=CLOUDINARY_API_SECRET,
+        secure=True,
+    )
 
 # Google Sheets - Progetti
 PROJECTS_SHEET_ID = os.environ.get(
@@ -789,7 +803,10 @@ async def upload_image(
     file: UploadFile = File(...),
     x_admin_token: str | None = Header(default=None, alias="X-Admin-Token"),
 ):
-    """Carica un'immagine sul server. Solo admin. Ritorna l'URL pubblico."""
+    """Carica un'immagine su Cloudinary. Solo admin. Ritorna l'URL pubblico.
+
+    Se Cloudinary non e' configurato, fallback su disco locale (legacy).
+    """
     _require_admin(x_admin_token)
 
     content_type = (file.content_type or "").lower()
@@ -799,7 +816,6 @@ async def upload_image(
             detail="Formato non supportato. Usa JPG, PNG, WEBP o GIF.",
         )
 
-    # Leggi il file con limite di sicurezza
     data = await file.read()
     if len(data) > MAX_UPLOAD_BYTES:
         raise HTTPException(
@@ -809,6 +825,31 @@ async def upload_image(
     if not data:
         raise HTTPException(status_code=400, detail="File vuoto.")
 
+    # 1. Cloudinary (preferito): upload persistente + CDN + ottimizzazione
+    if CLOUDINARY_CLOUD_NAME:
+        try:
+            result = await asyncio.to_thread(
+                cloudinary.uploader.upload,
+                data,
+                folder="energeide/uploads",
+                resource_type="image",
+                # Genera automaticamente WebP/AVIF quando supportato
+                eager=[{"quality": "auto", "fetch_format": "auto"}],
+                use_filename=False,
+                unique_filename=True,
+                overwrite=False,
+            )
+            return {
+                "ok": True,
+                "url": result["secure_url"],
+                "filename": result.get("public_id", ""),
+                "size": result.get("bytes", len(data)),
+            }
+        except Exception as exc:  # pragma: no cover
+            logger.exception("Errore Cloudinary, fallback su disco locale: %s", exc)
+            # Non blocca: continua con il salvataggio locale come fallback
+
+    # 2. Fallback: disco locale (NON persistente tra deploy!)
     ext = ALLOWED_IMAGE_TYPES[content_type]
     fname = f"{uuid.uuid4().hex}{ext}"
     dest = UPLOADS_DIR / fname
