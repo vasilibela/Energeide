@@ -167,12 +167,27 @@ const Contatti = () => {
                   </span>
                   <div>
                     <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">
-                      Indirizzo
+                      Sede Magazzino
                     </p>
                     <p className="font-montserrat font-semibold leading-snug">
-                      {SITE.addressLine1}
+                      Viale Sabotino 32
                       <br />
-                      {SITE.addressLine2}
+                      20832 Desio (MB)
+                    </p>
+                  </div>
+                </li>
+                <li className="flex items-start gap-4">
+                  <span className="w-10 h-10 rounded-xl bg-[#0FB36B]/15 text-[#0FB36B] flex items-center justify-center shrink-0">
+                    <MapPin className="w-5 h-5" />
+                  </span>
+                  <div>
+                    <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">
+                      Sede Legale
+                    </p>
+                    <p className="font-montserrat font-semibold leading-snug">
+                      Corso Vittorio Emanuele III, 21
+                      <br />
+                      83020 Quadrelle (AV)
                     </p>
                   </div>
                 </li>

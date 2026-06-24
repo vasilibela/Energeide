@@ -136,11 +136,25 @@ const Footer = () => {
                 </span>
               </li>
               <li className="flex items-start gap-2 text-gray-300">
+                <MapPin className="w-4 h-4 text-[#F4C542] mt-0.5 shrink-0" />
+                <span className="leading-snug">
+                  <strong className="block text-white text-xs uppercase tracking-wider mb-0.5">
+                    Magazzino
+                  </strong>
+                  Viale Sabotino 32
+                  <br />
+                  20832 Desio (MB)
+                </span>
+              </li>
+              <li className="flex items-start gap-2 text-gray-300">
                 <MapPin className="w-4 h-4 text-[#0FB36B] mt-0.5 shrink-0" />
                 <span className="leading-snug">
-                  {SITE.addressLine1}
+                  <strong className="block text-white text-xs uppercase tracking-wider mb-0.5">
+                    Sede Legale
+                  </strong>
+                  Corso Vittorio Emanuele III, 21
                   <br />
-                  {SITE.addressLine2}
+                  83020 Quadrelle (AV)
                 </span>
               </li>
             </ul>

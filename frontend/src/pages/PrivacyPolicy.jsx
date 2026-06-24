@@ -138,11 +138,25 @@ const PrivacyPolicy = () => (
           </p>
           <ul className="space-y-3 text-sm">
             <li className="flex items-start gap-3 text-gray-200">
+              <MapPin className="w-4 h-4 text-[#F4C542] shrink-0 mt-0.5" />
+              <span>
+                <strong className="block text-white text-[11px] uppercase tracking-wider mb-0.5">
+                  Magazzino
+                </strong>
+                Viale Sabotino 32
+                <br />
+                20832 Desio (MB)
+              </span>
+            </li>
+            <li className="flex items-start gap-3 text-gray-200">
               <MapPin className="w-4 h-4 text-[#0FB36B] shrink-0 mt-0.5" />
               <span>
-                {SITE.addressLine1}
+                <strong className="block text-white text-[11px] uppercase tracking-wider mb-0.5">
+                  Sede Legale
+                </strong>
+                Corso Vittorio Emanuele III, 21
                 <br />
-                {SITE.addressLine2}
+                83020 Quadrelle (AV)
               </span>
             </li>
             <li className="flex items-center gap-3 text-gray-200">

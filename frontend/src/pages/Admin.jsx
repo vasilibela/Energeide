@@ -15,7 +15,6 @@ import {
   AlertCircle,
   Pencil,
   X as XIcon,
-  CloudUpload,
 } from "lucide-react";
 import Seo from "../components/Seo";
 import ImageUploader, { resolveImageUrl } from "../components/ImageUploader";
@@ -883,40 +882,6 @@ const Admin = () => {
     setEditingProject(null);
   }, [activeTab]);
 
-  const [migrating, setMigrating] = useState(false);
-  const [migrationResult, setMigrationResult] = useState(null);
-
-  const runMigration = async () => {
-    if (
-      !window.confirm(
-        "Avvia la migrazione delle foto locali su Cloudinary?\n\n" +
-          "Funziona solo se i file sono ancora presenti su disco. " +
-          "L'operazione è sicura: non sovrascrive foto già su Cloudinary."
-      )
-    )
-      return;
-    setMigrating(true);
-    setMigrationResult(null);
-    try {
-      const res = await fetch(`${API_URL}/api/admin/migrate-uploads`, {
-        method: "POST",
-        headers: { "X-Admin-Token": token },
-      });
-      if (!res.ok) {
-        setMigrationResult({ error: "Errore durante la migrazione." });
-        return;
-      }
-      const data = await res.json();
-      setMigrationResult(data);
-      reloadPosts();
-      reloadProjects();
-    } catch (err) {
-      setMigrationResult({ error: "Errore di rete." });
-    } finally {
-      setMigrating(false);
-    }
-  };
-
   if (!token) {
     return (
       <>
@@ -952,72 +917,6 @@ const Admin = () => {
           </div>
 
           <Tabs active={activeTab} onChange={setActiveTab} />
-
-          {/* Migrazione foto su Cloudinary */}
-          <div className="mb-6 bg-white border border-gray-100 rounded-xl p-4 flex flex-wrap items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <CloudUpload className="w-5 h-5 text-[#0FB36B]" />
-              <div>
-                <p className="text-sm font-montserrat font-semibold text-[#0A1F44]">
-                  Migrazione foto su Cloudinary
-                </p>
-                <p className="text-xs text-gray-500">
-                  Sposta le foto locali su Cloudinary (utile dopo i deploy).
-                </p>
-              </div>
-            </div>
-            <button
-              type="button"
-              data-testid="run-migration"
-              onClick={runMigration}
-              disabled={migrating}
-              className="inline-flex items-center gap-2 h-9 px-4 bg-[#0A1F44] hover:bg-[#0d2855] disabled:opacity-50 text-white text-sm font-semibold rounded-md transition-colors"
-            >
-              {migrating ? "Migrazione in corso…" : "Avvia migrazione"}
-            </button>
-          </div>
-
-          {migrationResult ? (
-            <div
-              data-testid="migration-result"
-              className={`mb-6 rounded-xl p-4 text-sm ${
-                migrationResult.error
-                  ? "bg-red-50 border border-red-200 text-red-700"
-                  : "bg-green-50 border border-green-200 text-green-800"
-              }`}
-            >
-              {migrationResult.error ? (
-                <p>{migrationResult.error}</p>
-              ) : (
-                <>
-                  <p className="font-semibold mb-1">
-                    ✅ Migrazione completata
-                  </p>
-                  <p>
-                    Migrate: <strong>{migrationResult.migrated}</strong> · File
-                    mancanti: <strong>{migrationResult.missing}</strong> · Già
-                    esterne: <strong>{migrationResult.already_external}</strong>
-                  </p>
-                  {migrationResult.broken_items?.length > 0 ? (
-                    <div className="mt-3 pt-3 border-t border-green-200">
-                      <p className="font-semibold text-amber-700 mb-1.5">
-                        ⚠️ Elementi con foto rotte (da ricaricare manualmente):
-                      </p>
-                      <ul className="list-disc list-inside space-y-0.5 text-amber-700">
-                        {migrationResult.broken_items.map((b) => (
-                          <li key={b.id}>
-                            {b.type === "post" ? "Post" : "Progetto"}: &laquo;
-                            <em>{b.title}</em>&raquo; — {b.broken_count} foto da
-                            ricaricare
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  ) : null}
-                </>
-              )}
-            </div>
-          ) : null}
 
           {activeTab === "blog" ? (
             <div className="grid lg:grid-cols-5 gap-8 items-start">

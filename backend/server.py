@@ -291,8 +291,13 @@ async def get_projects(refresh: bool = False):
 
     # Merge con i progetti creati dal pannello admin (in MongoDB)
     db_projects = await _fetch_db_projects()
-    # I progetti dell'admin compaiono per primi (più recenti)
     merged = db_projects + projects
+    # Ordinamento finale unificato: tutti i progetti dal più recente al più
+    # vecchio in base al campo 'year' (data installazione).
+    merged.sort(
+        key=lambda p: _project_sort_key(p.get("year", "")),
+        reverse=True,
+    )
 
     _projects_cache["data"] = merged
     _projects_cache["ts"] = now
