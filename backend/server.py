@@ -863,6 +863,148 @@ async def upload_image(
     return {"ok": True, "url": public_url, "filename": fname, "size": len(data)}
 
 
+async def _cloudinary_upload_bytes(data: bytes) -> str | None:
+    """Carica i bytes su Cloudinary e ritorna l'URL pubblica."""
+    if not CLOUDINARY_CLOUD_NAME:
+        return None
+    try:
+        result = await asyncio.to_thread(
+            cloudinary.uploader.upload,
+            data,
+            folder="energeide/uploads",
+            resource_type="image",
+            eager=[{"quality": "auto", "fetch_format": "auto"}],
+            use_filename=False,
+            unique_filename=True,
+            overwrite=False,
+        )
+        return result["secure_url"]
+    except Exception as exc:  # pragma: no cover
+        logger.warning("Cloudinary upload failed: %s", exc)
+        return None
+
+
+@api_router.post("/admin/migrate-uploads")
+async def migrate_uploads_to_cloudinary(
+    x_admin_token: str | None = Header(default=None, alias="X-Admin-Token"),
+):
+    """Migra le immagini locali (`/api/uploads/...`) su Cloudinary.
+
+    Scansiona blog_posts e projects, per ogni URL `/api/uploads/{fname}`:
+    - Se il file esiste su disco: lo carica su Cloudinary e aggiorna il record
+    - Se NON esiste: lo segnala come 'broken'
+    """
+    _require_admin(x_admin_token)
+
+    if not CLOUDINARY_CLOUD_NAME:
+        raise HTTPException(status_code=503, detail="Cloudinary non configurato.")
+
+    report = {
+        "migrated": 0,
+        "missing": 0,
+        "already_external": 0,
+        "broken_items": [],
+    }
+    file_to_cloud_url: dict[str, str] = {}
+
+    async def migrate_url(url: str) -> tuple[str, str]:
+        if not url:
+            return url, "empty"
+        if not url.startswith("/api/uploads/"):
+            return url, "external"
+        fname = url.replace("/api/uploads/", "", 1)
+        if fname in file_to_cloud_url:
+            return file_to_cloud_url[fname], "cached"
+        path = UPLOADS_DIR / fname
+        if not path.exists():
+            return url, "missing"
+        try:
+            data = path.read_bytes()
+        except OSError:
+            return url, "missing"
+        new_url = await _cloudinary_upload_bytes(data)
+        if not new_url:
+            return url, "missing"
+        file_to_cloud_url[fname] = new_url
+        return new_url, "migrated"
+
+    # --- Migra blog_posts ---
+    async for post in db.blog_posts.find({}, {"_id": 0}):
+        post_id = post.get("id")
+        title = post.get("title", "")[:60]
+        images = post.get("images") or []
+        if not images and post.get("image_url"):
+            images = [post["image_url"]]
+
+        new_images: list[str] = []
+        changed = False
+        item_broken: list[str] = []
+        for u in images:
+            new_u, status = await migrate_url(u)
+            new_images.append(new_u)
+            if status == "migrated":
+                report["migrated"] += 1
+                changed = True
+            elif status == "missing":
+                report["missing"] += 1
+                item_broken.append(u)
+            elif status == "external":
+                report["already_external"] += 1
+
+        if changed:
+            await db.blog_posts.update_one(
+                {"id": post_id},
+                {"$set": {
+                    "images": new_images,
+                    "image_url": new_images[0] if new_images else "",
+                }},
+            )
+        if item_broken:
+            report["broken_items"].append({
+                "type": "post",
+                "id": post_id,
+                "title": title,
+                "broken_count": len(item_broken),
+            })
+
+    # --- Migra projects (admin DB) ---
+    async for proj in db.projects.find({}, {"_id": 0}):
+        proj_id = proj.get("id")
+        title = proj.get("title", "")[:60]
+        images = proj.get("images") or []
+
+        new_images = []
+        changed = False
+        item_broken = []
+        for u in images:
+            new_u, status = await migrate_url(u)
+            new_images.append(new_u)
+            if status == "migrated":
+                report["migrated"] += 1
+                changed = True
+            elif status == "missing":
+                report["missing"] += 1
+                item_broken.append(u)
+            elif status == "external":
+                report["already_external"] += 1
+
+        if changed:
+            await db.projects.update_one(
+                {"id": proj_id},
+                {"$set": {"images": new_images}},
+            )
+        if item_broken:
+            report["broken_items"].append({
+                "type": "project",
+                "id": proj_id,
+                "title": title,
+                "broken_count": len(item_broken),
+            })
+
+    _invalidate_projects_cache()
+    return report
+
+
 # Include the router in the main app
 app.include_router(api_router)
 
