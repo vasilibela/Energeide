@@ -50,7 +50,7 @@ export const PLANS = [
   {
     name: "Essential",
     subtitle: "Ideale per piccole abitazioni",
-    kw: "6 kW",
+    kw: "3 kWp",
     battery: "5 kWh",
     features: [
       "Inverter Ibrido",
@@ -65,7 +65,7 @@ export const PLANS = [
   {
     name: "Premium",
     subtitle: "La scelta consigliata",
-    kw: "7 kW",
+    kw: "6 kWp",
     battery: "10 kWh",
     features: [
       "Moduli Top Tier",

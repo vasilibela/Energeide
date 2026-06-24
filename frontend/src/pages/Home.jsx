@@ -53,9 +53,8 @@ const HeroSection = () => (
             <span className="text-[#F4C542]">investi nel futuro</span>
           </h1>
           <p className="text-base sm:text-lg text-gray-300 mb-8 leading-relaxed max-w-xl">
-            Consulenti energetici specializzati in fotovoltaico, pompe di
-            calore e soluzioni per eliminare il gas. Impianti fotovoltaici con
-            accumulo chiavi in mano da 6 kW a 20 kW
+            Consulenti energetici specializzati in impianti fotovoltaici e soluzioni per l'efficienza energetica. 
+            Impianti fotovoltaici chiavi in mano con sistemi di accumulo, progettati su misura per abitazioni e aziende.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 mb-8">
             <Link
@@ -221,22 +220,19 @@ const SuggestionSection = () => (
               </span>
             </div>
             <h2 className="text-3xl sm:text-4xl mb-4 font-montserrat font-bold">
-              Vuoi ancora più autonomia?
+              Hai esigenze energetiche particolari?
             </h2>
             <p className="text-gray-300 mb-6 leading-relaxed">
-              Per chi ha consumi più elevati o vuole eliminare completamente la
-              bolletta, offriamo anche soluzioni potenziate con{" "}
-              <strong className="text-[#F4C542]">9 kW di pannelli</strong> e{" "}
-              <strong className="text-[#F4C542]">15 kWh di accumulo</strong>.
-              Ideale per famiglie numerose, chi utilizza pompe di calore o ha
-              un'auto elettrica.
+             Realizziamo impianti fotovoltaici personalizzati in base ai consumi reali della tua abitazione o attività. 
+             Dalla configurazione standard fino a soluzioni ad alta autonomia con accumulo maggiorato, studiamo la soluzione 
+             più adatta alle tue esigenze.
             </p>
             <ul className="space-y-2 mb-6">
               {[
-                "Produzione fino a 13.500 kWh/anno",
-                "Copertura fino al 95% del fabbisogno",
-                "Perfetto per pompe di calore e auto elettrica",
-                "Maggiore indipendenza dalla rete",
+                "Progettazione su misura",
+                "Sistemi di accumulo personalizzabili",
+                "Soluzioni per abitazioni, aziende e attività commerciali",
+                "Consulenza dedicata",
               ].map((t) => (
                 <li key={t} className="flex items-center gap-2 text-sm">
                   <Check className="w-4 h-4 text-[#0FB36B] flex-shrink-0" />
@@ -254,8 +250,8 @@ const SuggestionSection = () => (
           </div>
           <div className="hidden lg:block">
             <img
-              src="https://images.unsplash.com/photo-1766507679659-30076abc8c95"
-              alt="Ricarica auto elettrica"
+              src="	https://drive.google.com/thumbnail?id=12TbZsvQkxpxYWLICz4LL9SXBpl-TF01c&sz=w1600"
+              alt="Impianto Fotovoltaico"
               className="w-full rounded-xl shadow-lg object-cover aspect-[4/3]"
             />
           </div>
