@@ -8,7 +8,7 @@ export const SITE = {
   phoneRaw: "393509312938",
   email: "info@energeide.it",
   vat: "P.IVA: 02987000649",
-  warehouseLine1: "Sede Magazzino: Viale Sabotino 32",
+  warehouseLine1: "Sede Magazzino: Viale Sabotino 87",
   warehouseLine2: "20832 Desio (MB)",
   addressLine1: "Sede Legale: Corso Vittorio Emanuele III, 21",
   addressLine2: "83020 Quadrelle (AV)",

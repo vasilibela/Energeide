@@ -1,4 +1,5 @@
 from fastapi import FastAPI, APIRouter, HTTPException, Header, UploadFile, File
+from fastapi.responses import Response
 from fastapi.staticfiles import StaticFiles
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
@@ -1008,6 +1009,96 @@ async def migrate_uploads_to_cloudinary(
 
     _invalidate_projects_cache()
     return report
+
+
+def _xml_escape(text: str) -> str:
+    return (
+        text.replace("&", "&amp;")
+        .replace("<", "&lt;")
+        .replace(">", "&gt;")
+        .replace('"', "&quot;")
+        .replace("'", "&apos;")
+    )
+
+
+@api_router.get("/posts/rss")
+async def posts_rss():
+    """RSS 2.0 feed dei post blog. Usato da Zapier/Buffer/IFTTT per
+    pubblicare automaticamente su Facebook, Instagram, X, ecc.
+    """
+    site_url = "https://energeide.it"
+    feed_url = f"{site_url}/api/posts/rss"
+
+    cursor = db.blog_posts.find({}, {"_id": 0}).sort("published_at", -1).limit(30)
+    posts = await cursor.to_list(length=30)
+
+    items_xml = []
+    for p in posts:
+        title = _xml_escape(p.get("title", "Senza titolo"))
+        content_text = p.get("content", "")
+        # Recupera la prima immagine come enclosure
+        images = p.get("images") or []
+        if not images and p.get("image_url"):
+            images = [p["image_url"]]
+        images = [_normalize_image_url(u) for u in images if u]
+        image_url = images[0] if images else ""
+
+        pub_iso = p.get("published_at", "")
+        try:
+            dt = (
+                datetime.fromisoformat(pub_iso)
+                if isinstance(pub_iso, str)
+                else (pub_iso or datetime.now(timezone.utc))
+            )
+        except ValueError:
+            dt = datetime.now(timezone.utc)
+        pub_rfc2822 = dt.strftime("%a, %d %b %Y %H:%M:%S +0000")
+
+        guid = p.get("id", "")
+        link = p.get("facebook_url") or f"{site_url}/news#{guid}"
+
+        # Description: HTML semplice con img + testo (Zapier/Buffer lo gestiscono bene)
+        desc_inner_parts = []
+        if image_url:
+            desc_inner_parts.append(
+                f'<img src="{image_url}" alt="{p.get("title","")}" />'
+            )
+        desc_inner_parts.append(f"<p>{content_text}</p>")
+        description_html = _xml_escape("".join(desc_inner_parts))
+
+        enclosure = ""
+        if image_url:
+            enclosure = (
+                f'<enclosure url="{_xml_escape(image_url)}" '
+                f'type="image/jpeg" length="0" />'
+            )
+
+        items_xml.append(
+            f"""
+    <item>
+      <title>{title}</title>
+      <link>{_xml_escape(link)}</link>
+      <guid isPermaLink="false">{_xml_escape(guid)}</guid>
+      <pubDate>{pub_rfc2822}</pubDate>
+      <description>{description_html}</description>
+      {enclosure}
+    </item>"""
+        )
+
+    last_build = datetime.now(timezone.utc).strftime("%a, %d %b %Y %H:%M:%S +0000")
+    xml = f"""<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Energeide - Blog</title>
+    <link>{site_url}/news</link>
+    <description>Foto delle installazioni e novita' dal mondo del fotovoltaico.</description>
+    <language>it-IT</language>
+    <lastBuildDate>{last_build}</lastBuildDate>
+    <atom:link href="{feed_url}" rel="self" type="application/rss+xml" />
+    {''.join(items_xml)}
+  </channel>
+</rss>"""
+    return Response(content=xml, media_type="application/rss+xml; charset=utf-8")
 
 
 # Include the router in the main app

@@ -170,7 +170,7 @@ const Contatti = () => {
                       Sede Magazzino
                     </p>
                     <p className="font-montserrat font-semibold leading-snug">
-                      Viale Sabotino 32
+                      Viale Sabotino 87
                       <br />
                       20832 Desio (MB)
                     </p>

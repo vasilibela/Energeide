@@ -141,7 +141,7 @@ const Footer = () => {
                   <strong className="block text-white text-xs uppercase tracking-wider mb-0.5">
                     Magazzino
                   </strong>
-                  Viale Sabotino 32
+                  Viale Sabotino 87
                   <br />
                   20832 Desio (MB)
                 </span>

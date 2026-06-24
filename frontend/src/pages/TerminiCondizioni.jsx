@@ -204,7 +204,7 @@ const TerminiCondizioni = () => (
                 <strong className="block text-white text-[11px] uppercase tracking-wider mb-0.5">
                   Magazzino
                 </strong>
-                Viale Sabotino 32
+                Viale Sabotino 87
                 <br />
                 20832 Desio (MB)
               </span>
