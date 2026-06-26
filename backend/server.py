@@ -50,6 +50,10 @@ if CLOUDINARY_CLOUD_NAME and CLOUDINARY_API_KEY and CLOUDINARY_API_SECRET:
         secure=True,
     )
 
+# Facebook Pages auto-publishing
+FACEBOOK_PAGE_ID = os.environ.get("FACEBOOK_PAGE_ID", "")
+FACEBOOK_PAGE_ACCESS_TOKEN = os.environ.get("FACEBOOK_PAGE_ACCESS_TOKEN", "")
+
 # Google Sheets - Progetti
 PROJECTS_SHEET_ID = os.environ.get(
     "PROJECTS_SHEET_ID", "16haAvbNJpofu6Wc_48v2xKFMSbPFSTjXvs2emIxUe0A"
@@ -563,6 +567,7 @@ class BlogPostCreate(BaseModel):
     image_url: str = ""  # accettato per compat; se images è vuoto, viene usato come singolo elemento
     facebook_url: str = ""
     published_at: str | None = None  # ISO 8601 opzionale
+    publish_to_facebook: bool = False  # opzionale: pubblica anche su Pagina FB
 
 
 class AdminLogin(BaseModel):
@@ -619,18 +624,75 @@ async def create_post(
     if not images and payload.image_url and payload.image_url.strip():
         images = [payload.image_url.strip()]
 
+    fb_post_url = ""
+    # Pubblica su Facebook PRIMA di salvare nel DB: cosi' possiamo
+    # salvare l'URL del post FB come "facebook_url" del record.
+    if payload.publish_to_facebook:
+        fb_post_url = await _publish_to_facebook(
+            message=f"{payload.title.strip()}\n\n{payload.content.strip()}",
+            image_url=images[0] if images else "",
+        )
+
     post = BlogPost(
         title=payload.title.strip(),
         content=payload.content.strip(),
         images=images,
         image_url=images[0] if images else "",
-        facebook_url=payload.facebook_url.strip(),
+        facebook_url=fb_post_url or payload.facebook_url.strip(),
         published_at=published_at,
     )
     doc = post.model_dump()
     doc["published_at"] = doc["published_at"].isoformat()
     await db.blog_posts.insert_one(doc)
     return post
+
+
+async def _publish_to_facebook(message: str, image_url: str) -> str:
+    """Pubblica un post (testo + foto opzionale) sulla pagina Facebook.
+
+    Ritorna l'URL del post creato, oppure stringa vuota in caso di errore
+    (silenzioso: la pubblicazione del blog non deve fallire per un errore FB).
+    """
+    if not FACEBOOK_PAGE_ID or not FACEBOOK_PAGE_ACCESS_TOKEN:
+        logger.warning("Facebook auto-publish disabilitato (env mancante)")
+        return ""
+
+    base = f"https://graph.facebook.com/v19.0/{FACEBOOK_PAGE_ID}"
+
+    try:
+        async with httpx.AsyncClient(timeout=20.0) as http:
+            if image_url:
+                # Endpoint /photos: pubblica foto con caption
+                resp = await http.post(
+                    f"{base}/photos",
+                    data={
+                        "url": image_url,
+                        "caption": message,
+                        "access_token": FACEBOOK_PAGE_ACCESS_TOKEN,
+                    },
+                )
+            else:
+                # Endpoint /feed: post di solo testo
+                resp = await http.post(
+                    f"{base}/feed",
+                    data={
+                        "message": message,
+                        "access_token": FACEBOOK_PAGE_ACCESS_TOKEN,
+                    },
+                )
+            data = resp.json()
+            if resp.status_code != 200:
+                logger.warning("Facebook publish failed (%s): %s", resp.status_code, data)
+                return ""
+            # /photos ritorna {"id": "...", "post_id": "..."}
+            # /feed   ritorna {"id": "..."}
+            post_id = data.get("post_id") or data.get("id", "")
+            if not post_id:
+                return ""
+            return f"https://www.facebook.com/{post_id}"
+    except Exception as exc:  # pragma: no cover
+        logger.exception("Errore Facebook publish: %s", exc)
+        return ""
 
 
 @api_router.put("/posts/{post_id}", response_model=BlogPost)
