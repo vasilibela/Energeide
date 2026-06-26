@@ -181,6 +181,7 @@ const PostForm = ({ token, onSaved, editing, onCancelEdit }) => {
     images: [],
     facebook_url: "",
     published_at: "",
+    publish_to_facebook: true,
   };
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
@@ -227,6 +228,10 @@ const PostForm = ({ token, onSaved, editing, onCancelEdit }) => {
         images: form.images,
         facebook_url: form.facebook_url,
       };
+      // publish_to_facebook: solo in creazione (non si "ri-pubblica" un edit)
+      if (!isEdit && form.publish_to_facebook) {
+        body.publish_to_facebook = true;
+      }
       // published_at: solo in edit (per cambiare la data del post)
       if (isEdit && form.published_at) {
         body.published_at = new Date(form.published_at + "T12:00:00").toISOString();
@@ -339,7 +344,31 @@ const PostForm = ({ token, onSaved, editing, onCancelEdit }) => {
             Cambiando la data, il post si riordina nella lista pubblica.
           </p>
         </div>
-      ) : null}
+      ) : (
+        <label
+          className="flex items-start gap-3 bg-[#1877F2]/5 border border-[#1877F2]/20 rounded-md p-3 cursor-pointer hover:bg-[#1877F2]/10 transition-colors"
+          data-testid="publish-fb-toggle"
+        >
+          <input
+            type="checkbox"
+            checked={form.publish_to_facebook}
+            onChange={(e) =>
+              setForm((s) => ({ ...s, publish_to_facebook: e.target.checked }))
+            }
+            className="mt-0.5 w-4 h-4 rounded border-gray-300 text-[#1877F2] focus:ring-[#1877F2]"
+          />
+          <div className="flex-1">
+            <p className="text-sm font-montserrat font-semibold text-[#0A1F44] flex items-center gap-1.5">
+              <Facebook className="w-4 h-4 text-[#1877F2]" />
+              Pubblica anche sulla Pagina Facebook
+            </p>
+            <p className="text-[11px] text-gray-500 mt-0.5">
+              Pubblica testo + copertina sulla pagina Facebook di Energeide al
+              momento del salvataggio.
+            </p>
+          </div>
+        </label>
+      )}
 
       <Feedback feedback={feedback} />
 
