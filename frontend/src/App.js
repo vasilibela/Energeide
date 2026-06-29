@@ -17,6 +17,7 @@ import Progetti from "./pages/Progetti";
 import FAQ from "./pages/FAQ";
 import Contatti from "./pages/Contatti";
 import News from "./pages/News";
+import NewsDetail from "./pages/NewsDetail";
 import Admin from "./pages/Admin";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TerminiCondizioni from "./pages/TerminiCondizioni";
@@ -42,6 +43,7 @@ const Layout = () => (
         <Route path="/faq" element={<FAQ />} />
         <Route path="/contatti" element={<Contatti />} />
         <Route path="/news" element={<News />} />
+        <Route path="/news/:id" element={<NewsDetail />} />
         <Route path="/admin" element={<Admin />} />
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
         <Route path="/termini-e-condizioni" element={<TerminiCondizioni />} />

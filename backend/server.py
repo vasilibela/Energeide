@@ -1163,6 +1163,28 @@ async def posts_rss():
     return Response(content=xml, media_type="application/rss+xml; charset=utf-8")
 
 
+@api_router.get("/posts/{post_id}", response_model=BlogPost)
+async def get_post(post_id: str):
+    """Ritorna un singolo post per ID (per la pagina di dettaglio /news/:id)."""
+    p = await db.blog_posts.find_one({"id": post_id}, {"_id": 0})
+    if not p:
+        raise HTTPException(status_code=404, detail="Post non trovato")
+
+    if isinstance(p.get("published_at"), str):
+        try:
+            p["published_at"] = datetime.fromisoformat(p["published_at"])
+        except ValueError:
+            p["published_at"] = datetime.now(timezone.utc)
+
+    images = p.get("images") or []
+    if not images and p.get("image_url"):
+        images = [p["image_url"]]
+    images = [_normalize_image_url(u) for u in images if u]
+    p["images"] = images
+    p["image_url"] = images[0] if images else ""
+    return p
+
+
 # Include the router in the main app
 app.include_router(api_router)
 

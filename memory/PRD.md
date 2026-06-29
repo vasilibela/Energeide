@@ -12,7 +12,8 @@ Sito vetrina italiano per Energeide S.r.l. (consulenti fotovoltaico, pompe di ca
 ## Pagine
 - `/` Home (Hero, Stats, Piani Essential/Premium/Elite, Suggerimento 9 kW, Why Us, Testimonials, CTA)
 - `/chi-siamo`, `/servizi`, `/progetti` (da Google Sheet), `/faq`, `/contatti`
-- `/news` Blog (post dal backend, empty-state se vuoto)
+- `/news` Blog (post dal backend, empty-state se vuoto). Le card mostrano un'anteprima troncata; al click si apre la pagina dedicata `/news/:id`.
+- `/news/:id` Pagina di dettaglio post (contenuto completo, galleria foto a tutta larghezza, link Facebook se presente).
 - `/admin` Area Riservata (login con token → form pubblicazione + lista post + elimina)
 - `/privacy-policy`, `/termini-e-condizioni`
 
@@ -20,6 +21,7 @@ Sito vetrina italiano per Energeide S.r.l. (consulenti fotovoltaico, pompe di ca
 - `GET  /api/projects` → lista progetti da Google Sheet (cached)
 - `GET  /api/projects/locations` → coordinate progetti per la mappa (geocoding Nominatim cached su Mongo `geocode_cache`)
 - `GET  /api/posts` → lista post blog (pubblica, drive URLs normalizzati)
+- `GET  /api/posts/{id}` → singolo post (per la pagina dettaglio `/news/:id`)
 - `POST /api/posts` → crea post (header `X-Admin-Token`)
 - `DELETE /api/posts/{id}` → elimina (header `X-Admin-Token`)
 - `POST /api/admin/login` → verifica token
