@@ -20,6 +20,8 @@ export const SITE = {
   facebookUrl: "https://www.facebook.com/profile.php?id=61575384451177",
   instagramUrl:
     "https://www.instagram.com/energeide_srl?igsh=azA2ZGg3b3FqYzU1&utm_source=qr",
+  linkedinUrl: "https://www.linkedin.com/company/energeide-srl/",
+  tiktokUrl: "https://vt.tiktok.com/ZSXeW4Ehs/",
   trustpilotUrl: "https://it.trustpilot.com/review/energeide.it",
 };
 
