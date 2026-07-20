@@ -18,3 +18,91 @@ a:focus-visible {
   outline-offset: 2px;
   border-radius: 6px;
 }
+
+
+/* Rich text editor (Quill) — style overrides per matcharsi con il tema Energeide */
+.rich-text-editor .ql-toolbar.ql-snow {
+  border: none;
+  border-bottom: 1px solid #e5e7eb;
+  border-top-left-radius: 6px;
+  border-top-right-radius: 6px;
+  background: #fafafa;
+}
+.rich-text-editor .ql-container.ql-snow {
+  border: none;
+  border-bottom-left-radius: 6px;
+  border-bottom-right-radius: 6px;
+  font-family: inherit;
+  font-size: 0.95rem;
+}
+.rich-text-editor .ql-editor {
+  min-height: var(--rte-min-height, 180px);
+  color: #1f2937;
+  line-height: 1.6;
+}
+.rich-text-editor .ql-editor.ql-blank::before {
+  color: #9ca3af;
+  font-style: normal;
+}
+.rich-text-editor .ql-snow .ql-stroke {
+  stroke: #0A1F44;
+}
+.rich-text-editor .ql-snow .ql-fill,
+.rich-text-editor .ql-snow .ql-picker {
+  color: #0A1F44;
+}
+.rich-text-editor .ql-snow.ql-toolbar button:hover .ql-stroke,
+.rich-text-editor .ql-snow.ql-toolbar button.ql-active .ql-stroke {
+  stroke: #0FB36B;
+}
+.rich-text-editor .ql-snow.ql-toolbar button:hover .ql-fill,
+.rich-text-editor .ql-snow.ql-toolbar button.ql-active .ql-fill {
+  fill: #0FB36B;
+}
+
+/* Rendering del contenuto pubblicato (blog detail, progetti card) */
+.rte-content {
+  color: #374151;
+  line-height: 1.7;
+  word-wrap: break-word;
+}
+.rte-content p {
+  margin: 0 0 0.75em 0;
+}
+.rte-content p:last-child { margin-bottom: 0; }
+.rte-content h2 {
+  font-family: Montserrat, sans-serif;
+  font-weight: 700;
+  font-size: 1.4rem;
+  color: #0A1F44;
+  margin: 1.2em 0 0.5em 0;
+}
+.rte-content h3 {
+  font-family: Montserrat, sans-serif;
+  font-weight: 700;
+  font-size: 1.15rem;
+  color: #0A1F44;
+  margin: 1.1em 0 0.4em 0;
+}
+.rte-content ul, .rte-content ol {
+  margin: 0 0 0.75em 1.4em;
+  padding-left: 0.5em;
+}
+.rte-content ul { list-style: disc; }
+.rte-content ol { list-style: decimal; }
+.rte-content li { margin-bottom: 0.3em; }
+.rte-content strong { font-weight: 700; color: #0A1F44; }
+.rte-content em { font-style: italic; }
+.rte-content u { text-decoration: underline; }
+.rte-content a {
+  color: #0FB36B;
+  text-decoration: underline;
+}
+.rte-content a:hover { color: #0d8f56; }
+.rte-content blockquote {
+  border-left: 3px solid #F4C542;
+  padding-left: 1rem;
+  color: #4b5563;
+  font-style: italic;
+  margin: 0.75em 0;
+}
